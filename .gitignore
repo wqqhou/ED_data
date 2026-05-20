@@ -1,2 +1,6 @@
 # Ignore local environment variables
 .env
+# Ignore everything in the data folder...
+data/*
+# ...except the .gitkeep file
+!data/.gitkeep
