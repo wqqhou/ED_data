@@ -2,6 +2,7 @@ import os
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
+import zipfile
 
 load_dotenv()
 
@@ -12,9 +13,13 @@ flags_url_template = os.getenv("NCES_FLAGS_URL_TEMPLATE")
 if not all([base_path, hd_url_template, flags_url_template]):
     raise ValueError("Missing configuration. Please check your .env file.")
 
-user_folder = input("Download directory name: ")
-download_dir = os.path.join(base_path, user_folder)
+download_folder = input("Download directory name: ")
+download_dir = os.path.join(base_path, download_folder)
 os.makedirs(download_dir, exist_ok=True)
+extracted_folder = input("Extract directory name: ")
+extract_dir = os.path.join(base_path, extracted_folder)
+os.makedirs(extract_dir, exist_ok=True)
+
 
 start_year = int(input("Starting year: "))
 end_year = int(input("Ending year: "))
@@ -54,4 +59,22 @@ with ThreadPoolExecutor(max_workers=4) as executor:
     for future in as_completed(futures):
         print(future.result())
 
-print("All downloads complete.")
+print("All downloads complete.\n\n--- Starting Extraction ---")
+
+# 2. Loop through the same 'tasks' list we used for downloading
+for url, file_path in tasks:
+    # 3. Verify the file actually exists (in case a download failed earlier)
+    if os.path.exists(file_path):
+        filename = os.path.basename(file_path)
+        print(f"Extracting {filename}...")
+        
+        try:
+            # 4. Open the ZIP and extract all contents to our new folder
+            with zipfile.ZipFile(file_path, 'r') as zip_ref:
+                zip_ref.extractall(extract_dir)
+        except zipfile.BadZipFile:
+            print(f"Error: {filename} is corrupted or not a valid ZIP file.")
+    else:
+        print(f"Skipping {file_path} (File not found).")
+
+print(f"\nAll files successfully extracted to: {extract_dir}")
