@@ -35,11 +35,11 @@ def main():
     # 1. Load Environment Configuration
     load_dotenv()
     
-    base_path = os.getenv("BASE_DOWNLOAD_PATH")
+    base_path = os.getenv("BASE_PROJECT_PATH")
     hd_url_template = os.getenv("NCES_HD_URL_TEMPLATE")
-    flags_url_template = os.getenv("NCES_FLAGS_URL_TEMPLATE")
+    sfa_url_template = os.getenv("NCES_SFA_URL_TEMPLATE")
     
-    if not all([base_path, hd_url_template, flags_url_template]):
+    if not all([base_path, hd_url_template, sfa_url_template]):
         raise ValueError("Missing configuration. Please check your .env file.")
         
     # 2. Setup Directories from User Input
@@ -57,12 +57,13 @@ def main():
     # 3. Setup Concurrent Downloading Workflow
     tasks = []
     for year in range(start_year, end_year + 1):
+        academic_yr = f"{year % 100:02d}{(year + 1) % 100:02d}"
         hd_url = hd_url_template.format(year)
-        flags_url = flags_url_template.format(year)
+        sfa_url = sfa_url_template.format(academic_yr)
         
         tasks.extend([
             (hd_url, os.path.join(download_dir, f'HD{year}.zip')),
-            (flags_url, os.path.join(download_dir, f'FLAGS{year}.zip'))
+            (sfa_url, os.path.join(download_dir, f'SFA{academic_yr}.zip'))
         ])
         
     print(f"\nQueued {len(tasks)} files for download...")
@@ -80,10 +81,14 @@ def main():
         if os.path.exists(file_path):
             filename = os.path.basename(file_path)
             print(f"Extracting {filename}...")
-            
             try:
                 with zipfile.ZipFile(file_path, 'r') as zip_ref:
-                    zip_ref.extractall(extract_dir)
+                    all_files = zip_ref.namelist()
+                    files_to_keep = [f for f in all_files if not f.lower().endswith('_rv.csv')]
+
+                    for target_file in files_to_keep:
+                        zip_ref.extract(target_file, extract_dir)
+
             except zipfile.BadZipFile:
                 print(f"Error: {filename} is corrupted or not a valid ZIP file.")
         else:
