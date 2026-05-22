@@ -27,8 +27,6 @@ def plot_2yr_public_enrollment(df, output_dir):
         color='#2c3e50'
     )
     # Formating
-    plt.title('Figure 1: Total First-Time, Full-Time Undergraduate Enrollment\nat Public 2-Year Colleges (2010 - 2015)', 
-              fontsize=14, fontweight='bold', pad=15)
     plt.xlabel('Academic Year', fontsize=12, labelpad=10)
     plt.ylabel('Total Enrolled Students', fontsize=12, labelpad=10)
 
@@ -42,6 +40,17 @@ def plot_2yr_public_enrollment(df, output_dir):
     plot_path = os.path.join(output_dir, "figure1_2yr_enrollment.png")
     plt.savefig(plot_path, dpi=300)
     print(f"Success! High-resolution plot saved to: {plot_path}")
+
+    two_year_publics = df[(df['public'] == 1) & (df['degree_bach'] == 0)]
+    yearly_totals = two_year_publics.groupby('year')['enroll_ftug'].sum()
+    enrollment_2010 = yearly_totals.loc[2010]
+    enrollment_2015 = yearly_totals.loc[2015]
+    percent_change = ((enrollment_2015 - enrollment_2010) / enrollment_2010) * 100
+
+    print("\n--- 2-Year Public Enrollment Decline ---")
+    print(f"2010 Total: {enrollment_2010:,.0f} students")
+    print(f"2015 Total: {enrollment_2015:,.0f} students")
+    print(f"Percentage Change: {percent_change:.2f}%")
     plt.close()
 
 def plot_ny_vs_vt_aid(df, output_dir):
@@ -65,8 +74,6 @@ def plot_ny_vs_vt_aid(df, output_dir):
         legend=False
     )
     #Formating
-    plt.title('Figure 2: Average Federal Grant Aid per Student\nNew York vs. Vermont (2015-16)', 
-              fontsize=14, fontweight='bold', pad=15)
     plt.xlabel('State', fontsize=12, labelpad=10)
     plt.ylabel('Average Aid per Student ($)', fontsize=12, labelpad=10)
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, loc: "${:,.0f}".format(x)))
@@ -115,8 +122,7 @@ def state_spread_analysis(df, output_dir):
         color='per_student_aid',
         scope="usa",
         color_continuous_scale="YlGnBu", #colorblind-friendly
-        labels={'per_student_aid': 'Average Aid ($)'},
-        title="Figure 3: Average Federal Grant Aid per Student by State (2015-16)"
+        labels={'per_student_aid': 'Average Aid ($)'}
     )
     
     # formating
@@ -133,8 +139,6 @@ def state_spread_analysis(df, output_dir):
 
 def policy_simulation(df, output_dir):
 
-    print("\n--- Task 3: Policy Simulation (Current vs. Proposed) ---")
-    
     # Filtering, aggregation, and calculation
     df_2015 = df[df['year'] == 2015].copy()
     df_2015['grant_simulated'] = (1750 * df_2015['enroll_ftug']) + (0.15 * (df_2015['enroll_ftug'] ** 2))
@@ -154,6 +158,7 @@ def policy_simulation(df, output_dir):
     proposed_9010 = state_totals['Proposed System'].quantile(0.9) / state_totals['Proposed System'].quantile(0.1)
     print("-" * 56)
     print(f"{'90/10 Ratio':<20} | {current_9010:.2f}{'':<12} | {proposed_9010:.2f}")
+    
     # Calculate the extra spending (budget impact) per state
     state_totals['budget_impact'] = state_totals['grant_simulated'] - state_totals['grant_federal']
     national_extra_cost = state_totals['budget_impact'].sum()
@@ -168,7 +173,29 @@ def policy_simulation(df, output_dir):
         var_name='Allocation Model', 
         value_name='Per-Student Aid'
     )
+    print("\nGenerating Simulated US Heat Map...")
     
+    fig_sim = px.choropleth(
+        state_totals,
+        locations='stabbr',
+        locationmode="USA-states",
+        color='Proposed System', 
+        scope="usa",
+        color_continuous_scale="YlGnBu", 
+        labels={'Proposed System': 'Simulated Aid ($)'}
+    )
+
+    fig_sim.update_layout(
+        title_font_size=18,
+        title_x=0.5,
+        coloraxis_colorbar=dict(title="Simulated Aid per Student")
+    )
+    
+    # Save the output
+    plot_path_sim = os.path.join(output_dir, "figure4_simulated_aid_map.png")
+    fig_sim.write_image(plot_path_sim, scale=3) 
+    print(f"Simulated map successfully saved to: {plot_path_sim}")
+
     print("\nGenerating Spread Comparison Plot...")
     sns.set_theme(style="whitegrid")
     plt.figure(figsize=(10, 6))
@@ -181,9 +208,7 @@ def policy_simulation(df, output_dir):
         width=0.4,
         fliersize=5 
     )
-    
-    plt.title('Figure 4: Distribution of State Average Per-Student Aid\nCurrent Policy vs. Proposed Change (2015-16)', 
-              fontsize=14, fontweight='bold', pad=15)
+
     plt.xlabel('Allocation Framework', fontsize=12, labelpad=10)
     plt.ylabel('State Average Aid per Student ($)', fontsize=12, labelpad=10)
     
@@ -191,46 +216,17 @@ def policy_simulation(df, output_dir):
     plt.tight_layout()
     
     # Save the output
-    plot_path = os.path.join(output_dir, "figure4_policy_simulation.png")
+    plot_path = os.path.join(output_dir, "figure5_policy_simulation.png")
     plt.savefig(plot_path, dpi=300)
     print(f"Plot successfully saved to: {plot_path}")
     plt.close()
 
-    print("\nGenerating Simulated US Heat Map...")
-    
-    fig_sim = px.choropleth(
-        state_totals,
-        locations='stabbr',
-        locationmode="USA-states",
-        color='Proposed System', 
-        scope="usa",
-        color_continuous_scale="YlGnBu", 
-        labels={'Proposed System': 'Simulated Aid ($)'},
-        title="Figure 5: Simulated Federal Grant Aid per Student by State"
-    )
-
-    fig_sim.update_layout(
-        title_font_size=18,
-        title_x=0.5,
-        coloraxis_colorbar=dict(title="Simulated Aid per Student")
-    )
-    
-    # Save the output
-    plot_path_sim = os.path.join(output_dir, "figure5_simulated_aid_map.png")
-    fig_sim.write_image(plot_path_sim, scale=3) 
-    print(f"Simulated map successfully saved to: {plot_path_sim}")
-    # --- Winners & Losers Dummy Variable Map ---
-    
-    # 1. Create the dummy variable (1 if budget_impact > 0, 0 otherwise)
+    #Calculating net gainers and losers
     state_totals['winner_dummy'] = (state_totals['budget_impact'] > 0).astype(int)
-    
-    # Create a clean string label for the map legend based on the dummy
     state_totals['outcome'] = state_totals['winner_dummy'].map({
         1: 'Winner (Net Gain)', 
         0: 'Loser (Net Loss)'
     })
-    
-    # 2. Generate the Discrete Heat Map
     print("\nGenerating Winners/Losers US Heat Map...")
     fig_winners = px.choropleth(
         state_totals,
@@ -238,22 +234,19 @@ def policy_simulation(df, output_dir):
         locationmode="USA-states",
         color='outcome', 
         scope="usa",
-        # Force strict discrete colors: Green for 1, Red for 0
-        color_discrete_map={
-            'Winner (Net Gain)': '#0072B2', 
+        color_discrete_map={ 
+            'Winner (Net Gain)': '#0072B2', #Color blind friendly 
             'Loser (Net Loss)': '#E69F00'
-        }, 
-        title="Figure 6: Policy Winners and Losers"
+        } 
+        
     )
     
-    # Adjust layout for the memo
     fig_winners.update_layout(
         title_font_size=18,
         title_x=0.5,
         legend_title_text="Policy Impact"
     )
-    
-    # 3. Save the final map
+    #save the output
     plot_path_winners = os.path.join(output_dir, "figure6_winners_losers_map.png")
     fig_winners.write_image(plot_path_winners, scale=3) 
     print(f"Winners map successfully saved to: {plot_path_winners}")
@@ -268,7 +261,6 @@ def main():
     figure_dir = os.path.join(base_path, figure_folder)
     os.makedirs(figure_dir, exist_ok=True)
     
-    # Execute all plotting functions
     plot_2yr_public_enrollment(df, figure_dir)
     plot_ny_vs_vt_aid(df, figure_dir)
     state_spread_analysis(df, figure_dir)
