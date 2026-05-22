@@ -30,4 +30,3 @@ Generate the analysis figures:
 ```
 python3 plot.py
 ```
-f
