@@ -1,14 +1,20 @@
 # ED_data
 
-initalize:
+Initialize the environment:
 ```
-pip3 install -r requirements.txt 
+pip3 install -r requirements.txt
 ```
+Replace the placeholders in the .env file with the data path and URL you would like to work with.
 
-Replace the placeholders in th env with your the data path and url youh would like to work with. 
-
-Download the data:
+Download the raw data:
 ```
 python3 data_download.py
 ```
-
+Clean and process the dataset:
+```
+python3 data_clean.py
+```
+Generate the analysis figures:
+```
+python3 plot.py
+```

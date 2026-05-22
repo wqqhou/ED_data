@@ -15,7 +15,6 @@ def process_ipeds_data(extract_dir, start_year, end_year):
     all_years_data = []
 
     for year in range(start_year, end_year + 1):
-        # Shift math forward to match the reporting cohort (e.g., 2010 pulls SFA1011)
         academic_yr = f"{year % 100:02d}{(year + 1) % 100:02d}"
         
         hd_file = os.path.join(extract_dir, f'HD{year}.csv')
@@ -27,11 +26,9 @@ def process_ipeds_data(extract_dir, start_year, end_year):
             df_hd = pd.read_csv(hd_file, encoding='cp1252', low_memory=False)
             df_sfa = pd.read_csv(sfa_file, encoding='cp1252', low_memory=False)
 
-            # Preventative formatting: Strip ghost spaces from headers
+            # Preventative formatting
             df_hd.columns = df_hd.columns.str.upper().str.strip()
             df_sfa.columns = df_sfa.columns.str.upper().str.strip()
-
-            # Force both keys to be clean strings before merging
             df_hd['UNITID'] = df_hd['UNITID'].astype(str).str.strip()
             df_sfa['UNITID'] = df_sfa['UNITID'].astype(str).str.strip()
 
@@ -80,17 +77,13 @@ def process_ipeds_data(extract_dir, start_year, end_year):
 
     print("\n--- Creating a Balanced Panel ---")
 
-    # Step 1: Drop rows with missing values
+    # Drop rows with missing values
     clean_panel_df = clean_panel_df.dropna()
-
-    # Step 2: Enforce exactly 6 years of data per school
+    # Enforce exactly 6 years of data per school
     school_counts = clean_panel_df['UNITID'].value_counts()
     valid_schools = school_counts[school_counts == 6].index
-
     # Filter the dataframe to only keep rows where the school ID is in that valid list
     clean_panel_df = clean_panel_df[clean_panel_df['UNITID'].isin(valid_schools)]
-    
-    # Rename columns to match requirements
     clean_panel_df.rename(columns={
         'UNITID': 'ID_IPEDS',
         'STABBR': 'stabbr',
@@ -107,7 +100,7 @@ def process_ipeds_data(extract_dir, start_year, end_year):
 
 
 def main():
-    # 1. Define paths
+
     load_dotenv()
     base_path = os.getenv("BASE_PROJECT_PATH")
 
@@ -119,10 +112,8 @@ def main():
     clean_dir = os.path.join(base_path, clean_folder)
     os.makedirs(clean_dir, exist_ok=True)
     
-    # 2. Process the data
     clean_data = process_ipeds_data(interim_dir, 2010, 2015)
     
-    # 3. Save the final deliverables
     if clean_data is not None and not clean_data.empty:
         csv_path = os.path.join(clean_dir, "cleaned_panel.csv")
         parquet_path = os.path.join(clean_dir, "cleaned_panel.parquet")
@@ -136,6 +127,5 @@ def main():
     else:
         print("\nError: Data processing failed or resulted in an empty dataframe. Nothing saved.")
 
-# Standard Python boilerplate to execute the main function
 if __name__ == "__main__":
     main()

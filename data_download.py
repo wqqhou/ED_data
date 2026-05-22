@@ -32,7 +32,6 @@ def main():
     Main execution function to load configuration, prompt user, 
     download files concurrently, and extract them.
     """
-    # 1. Load Environment Configuration
     load_dotenv()
     
     base_path = os.getenv("BASE_PROJECT_PATH")
@@ -42,7 +41,7 @@ def main():
     if not all([base_path, hd_url_template, sfa_url_template]):
         raise ValueError("Missing configuration. Please check your .env file.")
         
-    # 2. Setup Directories from User Input
+    # Setup Directories from User Input
     download_folder = input("Download directory name: ")
     download_dir = os.path.join(base_path, download_folder)
     os.makedirs(download_dir, exist_ok=True)
@@ -54,7 +53,7 @@ def main():
     start_year = int(input("Starting year: "))
     end_year = int(input("Ending year: "))
     
-    # 3. Setup Concurrent Downloading Workflow
+    # Setup Concurrent Downloading Workflow
     tasks = []
     for year in range(start_year, end_year + 1):
         academic_yr = f"{year % 100:02d}{(year + 1) % 100:02d}"
@@ -76,7 +75,7 @@ def main():
             
     print("All downloads complete.\n\n--- Starting Extraction ---")
     
-    # 4. Extract Downloaded Files
+    # Extract Downloaded Files
     for url, file_path in tasks:
         if os.path.exists(file_path):
             filename = os.path.basename(file_path)
