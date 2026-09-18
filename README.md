@@ -9,6 +9,7 @@ Analysis pipeline for 2-Year Public College Enrollment Trends and Federal Grant 
   * `interim/`: Processing files.
   * `clean/`: Processed `.parquet` files ready for analysis and csv ready for sharing.
 * **`scripts/`**: Containing all Python script.
+ * **`Figure/`**: Containing all output figures.
 
 ## Research workflow
 
