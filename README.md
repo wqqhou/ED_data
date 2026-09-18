@@ -9,8 +9,7 @@ Analysis pipeline for 2-Year Public College Enrollment Trends and Federal Grant 
   * `interim/`: Processing files.
   * `clean/`: Processed `.parquet` files ready for analysis and csv ready for sharing.
 * **`scripts/`**: Containing all Python script.
-* **`figures/`**: The generated output, including `.png` charts and the final PDF memo.
-* 
+
 ## Research workflow
 
 - Downloads annual IPEDS Institutional Characteristics (HD) and Student Financial Aid (SFA) files programmatically and in parallel.
