@@ -10,6 +10,20 @@ Analysis pipeline for 2-Year Public College Enrollment Trends and Federal Grant 
   * `clean/`: Processed `.parquet` files ready for analysis and csv ready for sharing.
 * **`scripts/`**: Containing all Python script.
 * **`figures/`**: The generated output, including `.png` charts and the final PDF memo.
+* 
+## Research workflow
+
+- Downloads annual IPEDS Institutional Characteristics (HD) and Student Financial Aid (SFA) files programmatically and in parallel.
+- Merges institution-level files by `UNITID`, standardizes fields, applies sample restrictions, and constructs a balanced six-year panel.
+- Measures enrollment changes among public two-year institutions and compares per-student federal aid across states.
+- Computes state-level distributional statistics, including percentiles and 90/10 ratios, and produces U.S. choropleth maps.
+- Implements a counterfactual grant-allocation formula and evaluates its distributional and budget implications, including state-level gains and losses.
+
+## Methods and tools
+
+**Python, pandas, Requests, concurrent downloads, Parquet, Matplotlib, Seaborn, Plotly, descriptive statistics, policy simulation**
+
+The repository separates data acquisition, cleaning, analysis, and visualization into reproducible scripts and includes the resulting figures and research memo.
 
 ## Quick Start
 Initialize the environment:
