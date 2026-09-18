@@ -65,13 +65,7 @@ The analysis addressed three questions:
 
 3. **Counterfactual allocation:** Simulate a proposed school-level federal grant formula based on enrollment:
 
-$$
-\text{Federal Grant}_i
-=
-1750 \times \text{Enrollment}_i
-+
-0.15 \times \text{Enrollment}_i^2
-$$
+$$\text{Federal Grant}_i=1750 \times \text{Enrollment}_i+0.15 \times \text{Enrollment}_i^2$$
 
 and evaluate how the counterfactual changes the **cross-state dispersion of average per-student federal grant aid**.
 
