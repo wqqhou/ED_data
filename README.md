@@ -1,46 +1,220 @@
-# ED_data
+# ED Data Analysis: College Enrollment & Federal Grant Allocation
 
-Analysis pipeline for 2-Year Public College Enrollment Trends and Federal Grant Allocations using IPEDS data.
+Independent empirical data-analysis project using the **Integrated Postsecondary Education Data System (IPEDS)** to study enrollment trends and the geographic distribution of federal student aid.
+
+**Context:** This repository contains my independent solution to a faculty-assigned data analysis task provided by **Prof. Anran Li**. The task was framed as a policy analysis for the U.S. Department of Education (ED).
+
+The assignment specified the research questions, sample definitions, and counterfactual policy formula described below. I independently completed the **data acquisition, cleaning, panel construction, statistical analysis, policy simulation, visualizations, and policy memo in Python**.
+
+---
+
+## Assignment Specification
+
+### 1. Construct an IPEDS Panel
+
+The first task was to construct an institution-level panel using two components of IPEDS:
+
+* **Directory Information (HD)** from the Institutional Characteristics survey
+* **Student Financial Aid and Net Price (SFA)** files
+
+The requested panel covers academic years **2010-11 through 2015-16** and contains:
+
+| Variable        | Description                                                             |
+| --------------- | ----------------------------------------------------------------------- |
+| `ID_IPEDS`      | Unique institution identifier                                           |
+| `stabbr`        | Two-letter state abbreviation                                           |
+| `year`          | Academic year, coded by starting year                                   |
+| `degree_bach`   | Indicator for bachelor's-degree-granting institution                    |
+| `public`        | Indicator for public institution                                        |
+| `enroll_ftug`   | First-time, full-time undergraduate enrollment                          |
+| `grant_federal` | Total federal grant aid awarded to first-time, full-time undergraduates |
+
+The assignment additionally required that I:
+
+* construct a **balanced six-year panel**, retaining only institutions observed in every year;
+* exclude Washington, D.C. and U.S. territories;
+* restrict the sample to institutions offering undergraduate education;
+* retain both public and private institutions in the master panel;
+* use IPEDS total-count variables rather than manually summing subcategories;
+* use the original reported IPEDS data rather than revised or imputed values; and
+* conduct all data analysis in **Python**.
+
+---
+
+## Research Questions
+
+### A. Enrollment Trends
+
+For this exercise, the assignment defined a **"two-year college"** as:
+
+> an undergraduate institution that does not grant bachelor's degrees.
+
+Using this definition, I was asked to determine whether total first-time, full-time enrollment at **public two-year colleges** increased, decreased, or remained approximately constant between 2010-11 and 2015-16.
+
+The analysis was also required to discuss limitations arising from the construction of the balanced panel.
+
+### B. Federal Grant Distribution
+
+Using only the **2015-16** data, I was asked to evaluate the geographic distribution of federal grant aid.
+
+The analysis addressed three questions:
+
+1. **New York vs. Vermont:** Assess Vermont's claim that neighboring New York receives substantially greater federal grant aid on a per-student basis.
+
+2. **Cross-state dispersion:** Calculate summary statistics describing the spread of average per-student federal grant aid across states and interpret what those statistics imply.
+
+3. **Counterfactual allocation:** Simulate a proposed school-level federal grant formula based on enrollment:
+
+$$
+\text{Federal Grant}_i
+=
+1750 \times \text{Enrollment}_i
++
+0.15 \times \text{Enrollment}_i^2
+$$
+
+and evaluate how the counterfactual changes the **cross-state dispersion of average per-student federal grant aid**.
+
+The definition of a two-year college and the counterfactual grant formula were supplied as part of the assignment rather than chosen independently.
+
+---
+
+## Implementation
+
+The project separates the empirical workflow into three stages.
+
+### 1. Data Acquisition — `script/data_download.py`
+
+* Programmatically downloads annual IPEDS HD and SFA files from NCES.
+* Uses concurrent downloads to retrieve annual files efficiently.
+* Extracts the original CSV data.
+* Excludes revised (`_rv`) files.
+* Allows the starting and ending academic years to be configured at runtime.
+
+### 2. Panel Construction — `script/data_clean.py`
+
+* Reads and standardizes annual HD and SFA files.
+* Merges the two surveys by institution identifier (`UNITID`).
+* Constructs the requested public and bachelor's-degree indicators.
+* Applies the geographic and undergraduate-institution restrictions.
+* Retains the variables required by the assignment.
+* Stacks annual observations into an institution-year panel.
+* Restricts the final dataset to institutions with complete observations throughout the six-year period.
+* Exports the resulting panel in both CSV and Parquet formats.
+
+### 3. Analysis & Policy Simulation — `script/plot.py`
+
+The analysis script:
+
+* calculates aggregate enrollment trends for public two-year institutions;
+* compares federal grant aid per student in New York and Vermont;
+* aggregates federal grant aid and enrollment to the state level;
+* calculates measures of cross-state dispersion, including percentiles, standard deviation, and the 90/10 ratio;
+* generates geographic visualizations of state-level aid;
+* implements the specified counterfactual federal grant formula;
+* compares the observed and simulated distributions of per-student aid; and
+* calculates the implied federal budget change and state-level gains/losses under the counterfactual.
+
+---
+
+## Selected Results
+
+The submitted analysis finds that:
+
+* First-time, full-time undergraduate enrollment at public two-year colleges in the balanced panel **declined by 16.65% between 2010 and 2015**.
+* Considerable cross-state variation in average federal grant aid per student is present in the 2015-16 data.
+* Under the specified counterfactual allocation formula, the cross-state distribution becomes substantially less dispersed:
+
+  * the **90/10 ratio declines from 1.63 to 1.12**;
+  * the difference between the highest- and lowest-aid states declines from approximately **$1,629 to $711 per student**; and
+  * the cross-state standard deviation falls substantially.
+* The simulated allocation would require approximately **$133.3 million in additional federal grant expenditure** relative to the observed allocation.
+
+These results should be interpreted as a descriptive and counterfactual exercise under the definitions and allocation rule specified in the original task.
+
+---
 
 ## Repository Structure
 
-* **`data/`**: The data vault. 
-  * `raw/`: Untouched, original IPEDS downloads (read-only).
-  * `interim/`: Processing files.
-  * `clean/`: Processed `.parquet` files ready for analysis and csv ready for sharing.
-* **`scripts/`**: Containing all Python script.
- * **`Figure/`**: Containing all output figures.
+```text
+ED_data/
+│
+├── script/
+│   ├── data_download.py     # Download and extract annual IPEDS files
+│   ├── data_clean.py        # Merge, clean, and construct balanced panel
+│   └── plot.py              # Statistical analysis, simulation, and figures
+│
+├── figure/
+│   ├── ED_memo.pdf
+│   ├── figure1_2yr_enrollment.png
+│   ├── figure2_ny_vt_aid.png
+│   ├── figure3_state_aid_map.png
+│   ├── figure4_simulated_aid_map.png
+│   ├── figure5_policy_simulation.png
+│   └── figure6_winners_losers_map.png
+│
+├── .env.example             # Local path and IPEDS URL configuration
+├── requirements.txt
+└── README.md
+```
 
-## Research workflow
+Raw and processed data are excluded from version control and can be regenerated locally using the scripts in this repository.
 
-- Downloads annual IPEDS Institutional Characteristics (HD) and Student Financial Aid (SFA) files programmatically and in parallel.
-- Merges institution-level files by `UNITID`, standardizes fields, applies sample restrictions, and constructs a balanced six-year panel.
-- Measures enrollment changes among public two-year institutions and compares per-student federal aid across states.
-- Computes state-level distributional statistics, including percentiles and 90/10 ratios, and produces U.S. choropleth maps.
-- Implements a counterfactual grant-allocation formula and evaluates its distributional and budget implications, including state-level gains and losses.
+---
 
-## Methods and tools
+## Reproducing the Analysis
 
-**Python, pandas, Requests, concurrent downloads, Parquet, Matplotlib, Seaborn, Plotly, descriptive statistics, policy simulation**
+### 1. Install dependencies
 
-The repository separates data acquisition, cleaning, analysis, and visualization into reproducible scripts and includes the resulting figures and research memo.
+```bash
+pip install -r requirements.txt
+```
 
-## Quick Start
-Initialize the environment:
-```
-pip3 install -r requirements.txt
-```
-Replace the placeholders in the .env file with the data path and URL you would like to work with.
+### 2. Configure the environment
 
-Download the raw data:
+Copy the example configuration:
+
+```bash
+cp .env.example .env
 ```
-python3 data_download.py
+
+Then set `BASE_PROJECT_PATH` in `.env` to the local path of this repository. The NCES download URL templates are already included in `.env.example`.
+
+### 3. Download IPEDS data
+
+```bash
+python script/data_download.py
 ```
-Clean and process the dataset:
+
+For the original analysis, use:
+
+```text
+Starting year: 2010
+Ending year:   2015
 ```
-python3 data_clean.py
+
+Specify local directories for the downloaded and extracted IPEDS files when prompted.
+
+### 4. Construct the clean panel
+
+```bash
+python script/data_clean.py
 ```
-Generate the analysis figures:
+
+Point the script to the directory containing the extracted IPEDS files and specify a destination for the clean dataset.
+
+### 5. Reproduce the analysis and figures
+
+```bash
+python script/plot.py
 ```
-python3 plot.py
-```
+
+Specify `figure` as the output directory to reproduce the figures included in this repository.
+
+---
+
+## Tools
+
+**Python · pandas · NumPy · Requests · concurrent.futures · Matplotlib · Seaborn · Plotly · Parquet**
+
+The project demonstrates an end-to-end empirical research workflow: **data acquisition → panel construction → sample selection → descriptive analysis → policy simulation → visualization → policy communication**.
