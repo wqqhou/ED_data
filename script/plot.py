@@ -14,6 +14,7 @@ from results_output import calculate_results, save_results
 
 
 def parse_args():
+    # Allow the input and output locations to be set from the command line.
     parser = argparse.ArgumentParser(description="Generate figures, saved results, and LaTeX macros.")
     parser.add_argument("--output-dir", default="figure", help="Figure directory (default: figure)")
     parser.add_argument("--cleaned-dir", default="data/cleaned", help="Cleaned data directory")
@@ -24,10 +25,12 @@ def parse_args():
 
 def plot_2yr_public_enrollment(yearly_totals, summary, output_dir):
     """Plot the exact annual totals exported in enrollment_by_year.csv."""
+    # Draw the enrollment trend with a marker for each academic year.
     sns.set_theme(style="whitegrid")
     plt.figure(figsize=(10, 6))
     sns.lineplot(data=yearly_totals, x="year", y="enroll_ftug", errorbar=None,
                  marker="o", linewidth=2.5, color="#2c3e50")
+    # Use readable student counts and save a print-quality figure.
     plt.xlabel("Academic Year", fontsize=12, labelpad=10)
     plt.ylabel("Total Enrolled Students", fontsize=12, labelpad=10)
     plt.xticks(yearly_totals["year"])
@@ -35,6 +38,8 @@ def plot_2yr_public_enrollment(yearly_totals, summary, output_dir):
     plt.tight_layout()
     plt.savefig(Path(output_dir) / "figure1_2yr_enrollment.png", dpi=300)
     plt.close()
+
+    # Report the start, end, and percentage change alongside the figure.
     enrollment = summary["enrollment"]
     print("\n--- Public two-year enrollment ---")
     print(f'2010 total: {enrollment["start"]:,.0f}')
@@ -44,11 +49,13 @@ def plot_2yr_public_enrollment(yearly_totals, summary, output_dir):
 
 def plot_ny_vs_vt_aid(state_results, output_dir):
     """Plot the NY/VT rows of the common state-results table."""
+    # Select the two states and compare their average aid per student.
     state_totals = state_results.loc[state_results["stabbr"].isin(["NY", "VT"])].copy()
     sns.set_theme(style="whitegrid")
     plt.figure(figsize=(8, 6))
     ax = sns.barplot(data=state_totals, x="stabbr", y="per_student_aid",
                      palette=["#3498db", "#e74c3c"], hue="stabbr", legend=False)
+    # Label the dollar amounts on both the axis and the bars before saving.
     plt.xlabel("State", fontsize=12, labelpad=10)
     plt.ylabel("Average Aid per Student ($)", fontsize=12, labelpad=10)
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, loc: f"${x:,.0f}"))
@@ -61,10 +68,13 @@ def plot_ny_vs_vt_aid(state_results, output_dir):
 
 def state_spread_analysis(state_results, summary, output_dir):
     """Use the same precomputed statistics as the JSON and memo macros."""
+    # Print the current spread across states, leaving the percentile ratio unitless.
     print("\n--- Current state aid: unweighted cross-state statistics ---")
     for metric, value in summary["current"].items():
         unit = "" if metric == "ratio_90_10" else "$"
         print(f"{metric}: {unit}{value:,.2f}")
+
+    # Shade each state by its current average aid per student and export the map.
     fig = px.choropleth(
         state_results, locations="stabbr", locationmode="USA-states",
         color="per_student_aid", scope="usa", color_continuous_scale="YlGnBu",
@@ -77,6 +87,7 @@ def state_spread_analysis(state_results, summary, output_dir):
 
 def policy_simulation(state_results, summary, output_dir):
     """Visualize the already-computed institutional simulation and state totals."""
+    # Compare state-level statistics and show the overall budget effect.
     print(f"\n{'Statistic':<20} | {'Current System':<15} | {'Proposed System':<15}")
     for metric in ("mean", "std", "min", "max", "range", "ratio_90_10"):
         unit = "" if metric == "ratio_90_10" else "$"
@@ -84,6 +95,7 @@ def policy_simulation(state_results, summary, output_dir):
               f'{unit}{summary["simulated"][metric]:,.2f}')
     print(f'Budget change in retained sample: ${summary["budget"]["change"]:,.2f}')
 
+    # Map the average aid per student under the proposed allocation.
     fig_sim = px.choropleth(
         state_results, locations="stabbr", locationmode="USA-states",
         color="simulated_aid_per_student", scope="usa", color_continuous_scale="YlGnBu",
@@ -93,11 +105,14 @@ def policy_simulation(state_results, summary, output_dir):
                           coloraxis_colorbar=dict(title="Simulated Aid per Student"))
     fig_sim.write_image(Path(output_dir) / "figure4_simulated_aid_map.png", scale=3)
 
+    # Stack both allocation columns into one table for a side-by-side comparison.
     plot_data = state_results.rename(columns={
         "per_student_aid": "Current System",
         "simulated_aid_per_student": "Proposed System",
     }).melt(id_vars="stabbr", value_vars=["Current System", "Proposed System"],
             var_name="Allocation Model", value_name="Per-Student Aid")
+
+    # Show how the distribution of state averages changes under the proposal.
     sns.set_theme(style="whitegrid")
     plt.figure(figsize=(10, 6))
     ax = sns.boxplot(data=plot_data, x="Allocation Model", y="Per-Student Aid",
@@ -110,6 +125,7 @@ def policy_simulation(state_results, summary, output_dir):
     plt.savefig(Path(output_dir) / "figure5_policy_simulation.png", dpi=300)
     plt.close()
 
+    # Identify states whose total grants rise, fall, or stay the same.
     fig_change = px.choropleth(
         state_results, locations="stabbr", locationmode="USA-states", color="outcome",
         scope="usa", color_discrete_map={
@@ -123,6 +139,7 @@ def policy_simulation(state_results, summary, output_dir):
 
 
 def generate_figures(clean_dir, output_dir, results_dir, tex_path):
+    # Calculate the shared results once from the cleaned panel.
     data_file = Path(clean_dir) / "cleaned_panel.parquet"
     df = pd.read_parquet(data_file)
     results = calculate_results(df)
@@ -141,10 +158,13 @@ def generate_figures(clean_dir, output_dir, results_dir, tex_path):
 
 
 def main():
+    # Load local settings and resolve paths from the configured project folder.
     load_dotenv()
     args = parse_args()
     repo_root = Path(__file__).resolve().parents[1]
     base_path = Path(os.getenv("BASE_PROJECT_PATH", repo_root)).expanduser().resolve()
+
+    # Generate the figures and save their supporting tables and memo values.
     generate_figures(
         base_path / args.cleaned_dir, base_path / args.output_dir,
         base_path / args.results_dir, base_path / args.tex_results,

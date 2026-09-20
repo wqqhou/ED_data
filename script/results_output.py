@@ -18,6 +18,7 @@ import pandas as pd
 
 from analysis_validation import checked_divide
 
+# Keep the study years and policy coefficients in one place.
 START_YEAR = 2010
 END_YEAR = 2015
 AID_YEAR = 2015
@@ -27,6 +28,7 @@ POLICY_QUADRATIC = 0.15
 
 def _check_panel(df):
     """Reject incomplete/invalid inputs instead of silently changing the sample."""
+    # Select the required fields and check for missing values or blank identifiers.
     required = [
         "ID_IPEDS", "stabbr", "year", "public", "degree_bach",
         "enroll_ftug", "grant_federal",
@@ -40,6 +42,8 @@ def _check_panel(df):
     for column in ("ID_IPEDS", "stabbr"):
         if panel[column].astype("string").str.strip().eq("").any():
             raise ValueError(f"Blank {column} in cleaned panel.")
+
+    # Validate numeric values, binary flags, and whole-number enrollment counts.
     for column in ("year", "public", "degree_bach", "enroll_ftug", "grant_federal"):
         panel[column] = pd.to_numeric(panel[column], errors="raise")
         values = panel[column].to_numpy(dtype=float)
@@ -50,6 +54,8 @@ def _check_panel(df):
             raise ValueError(f"{column} must contain only 0 and 1.")
     if panel["enroll_ftug"].mod(1).ne(0).any():
         raise ValueError("enroll_ftug must contain whole-number counts.")
+
+    # Require one observation per institution in every study year.
     expected = set(range(START_YEAR, END_YEAR + 1))
     if set(panel["year"].unique()) != expected:
         raise ValueError(f"This assignment and memo require exactly {START_YEAR}-{END_YEAR}.")
@@ -64,6 +70,7 @@ def describe_state_aid(values, *, label):
     """Unweighted statistics across state rates; sample SD and linear quantiles."""
     if len(values) < 2 or not np.isfinite(values.to_numpy(dtype=float)).all():
         raise ValueError(f"{label}: need at least two finite state rates.")
+    # Summarize the distribution, giving each state equal weight.
     q = values.quantile([0.10, 0.25, 0.75, 0.90], interpolation="linear")
     stats = {
         "mean": float(values.mean()),
@@ -76,6 +83,7 @@ def describe_state_aid(values, *, label):
         "p75": float(q.loc[0.75]),
         "p90": float(q.loc[0.90]),
     }
+    # Measure spread in dollars and as a ratio of the upper and lower percentiles.
     stats["range"] = stats["max"] - stats["min"]
     stats["ratio_90_10"] = float(checked_divide(
         stats["p90"], stats["p10"], label=f"{label}: 90/10 ratio"
@@ -90,6 +98,7 @@ def calculate_results(df):
     (DataFrame), and state_results (DataFrame). No files are written here.
     """
     panel = _check_panel(df)
+    # Total public two-year enrollment by year, then compare the endpoints.
     public_two_year = panel.loc[panel["public"].eq(1) & panel["degree_bach"].eq(0)]
     yearly = public_two_year.groupby("year")["enroll_ftug"].sum(min_count=1)
     if set(yearly.index) != set(range(START_YEAR, END_YEAR + 1)):
@@ -104,6 +113,8 @@ def calculate_results(df):
     # Cast before squaring to avoid integer overflow; apply at the institution level.
     enrollment = aid["enroll_ftug"].astype(float)
     aid["grant_simulated"] = POLICY_LINEAR * enrollment + POLICY_QUADRATIC * enrollment**2
+
+    # Sum grants and enrollment within each state before calculating aid per student.
     state = aid.groupby("stabbr")[[
         "grant_federal", "grant_simulated", "enroll_ftug"
     ]].sum(min_count=1)
@@ -115,13 +126,18 @@ def calculate_results(df):
     )
     if not {"NY", "VT"}.issubset(state.index):
         raise ValueError("Both NY and VT are required by the comparison and memo.")
+
+    # Label each state's funding change under the simulated policy.
     state["budget_impact"] = state["grant_simulated"] - state["grant_federal"]
     state["outcome"] = np.select(
         [state["budget_impact"].gt(0), state["budget_impact"].lt(0)],
         ["Net increase", "Net decrease"], default="No change",
     )
+    # Compare the distribution of state rates under the two funding systems.
     current = describe_state_aid(state["per_student_aid"], label="Current aid")
     simulated = describe_state_aid(state["simulated_aid_per_student"], label="Simulated aid")
+
+    # Keep the study assumptions alongside the results for downstream reports.
     summary = {
         "definitions": {
             "start_year": START_YEAR, "end_year": END_YEAR, "aid_year": AID_YEAR,
@@ -138,6 +154,7 @@ def calculate_results(df):
             "change_percent_unit": "Percent, not fraction or percentage points",
             "budget_scope": "Retained sample only, simulated minus observed",
         },
+        # Record sample size, enrollment change, and the New York–Vermont comparison.
         "sample": {
             "institutions": int(panel["ID_IPEDS"].nunique()),
             "institution_years": len(panel), "states_in_aid_year": len(state),
@@ -150,6 +167,7 @@ def calculate_results(df):
         },
         "current": current,
         "simulated": simulated,
+        # Report total funding changes and how many states gain or lose funding.
         "budget": {
             "current_total": float(state["grant_federal"].sum(min_count=1)),
             "simulated_total": float(state["grant_simulated"].sum(min_count=1)),
@@ -174,18 +192,21 @@ def make_latex_macros(summary):
     enrollment = summary["enrollment"]
     budget = summary["budget"]
     macros = {
+        # Format study dates and sample counts for the memo.
         "StudyStartYear": str(definitions["start_year"]),
         "StudyEndYear": str(definitions["end_year"]),
         "AidAcademicYear": f'{definitions["aid_year"]}--{(definitions["aid_year"] + 1) % 100:02d}',
         "PanelInstitutions": f'{summary["sample"]["institutions"]:,}',
         "PanelRows": f'{summary["sample"]["institution_years"]:,}',
         "PanelStates": str(summary["sample"]["states_in_aid_year"]),
+        # Round enrollment and state comparisons only for display.
         "EnrollmentStart": f'{enrollment["start"]:,.0f}',
         "EnrollmentEnd": f'{enrollment["end"]:,.0f}',
         "EnrollmentChangePct": f'{enrollment["change_percent"]:.2f}',
         "NYAid": f'{summary["ny_vt"]["NY"]:,.2f}',
         "VTAid": f'{summary["ny_vt"]["VT"]:,.2f}',
         "NYMinusVTAid": f'{summary["ny_vt"]["NY_minus_VT"]:,.2f}',
+        # Provide budget totals in dollars and the overall change in millions.
         "CurrentBudget": f'{budget["current_total"]:,.2f}',
         "SimulatedBudget": f'{budget["simulated_total"]:,.2f}',
         "BudgetChangeDollars": f'{budget["change"]:,.2f}',
@@ -194,6 +215,7 @@ def make_latex_macros(summary):
         "StatesNetDecrease": str(budget["states_net_decrease"]),
         "StatesUnchanged": str(budget["states_unchanged"]),
     }
+    # Use matching macro names for current and simulated aid statistics.
     stat_names = {
         "mean": "Mean", "median": "Median", "std": "SD", "min": "Min",
         "max": "Max", "range": "Range", "p10": "PTen", "p25": "PTwentyFive",
@@ -202,6 +224,7 @@ def make_latex_macros(summary):
     for system, prefix in (("current", "CurrentAid"), ("simulated", "SimulatedAid")):
         for key, suffix in stat_names.items():
             macros[prefix + suffix] = f'{summary[system][key]:,.2f}'
+    # Turn the formatted values into LaTeX commands with a generated-file notice.
     lines = [
         "% AUTO-GENERATED by script/plot.py. Do not edit by hand.",
         "% Values below are presentation strings; analysis_results.json stores numbers.",
@@ -217,11 +240,13 @@ def _atomic_text(path, text):
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = None
     try:
+        # Finish writing beside the destination, then replace it in one operation.
         with NamedTemporaryFile(mode="w", encoding="utf-8", newline="", dir=path.parent, delete=False) as handle:
             temporary = Path(handle.name)
             handle.write(text)
         os.replace(temporary, path)
     finally:
+        # Remove any temporary file left behind if writing or replacement fails.
         if temporary is not None:
             temporary.unlink(missing_ok=True)
 
@@ -232,23 +257,27 @@ def save_results(results, results_dir, tex_path, *, input_file=None):
     The caller should invoke this after successful figure generation. Serializing
     all content before writing avoids publishing invalid JSON or incomplete macros.
     """
+    # Record when the results were generated and which software versions were used.
     metadata = {
         "schema_version": 1,
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "python_version": platform.python_version(),
         "pandas_version": pd.__version__, "numpy_version": np.__version__,
     }
+    # Fingerprint the input, when supplied, so the source data can be identified.
     if input_file is not None:
         path = Path(input_file)
         with path.open("rb") as handle:
             metadata["input_sha256"] = hashlib.file_digest(handle, "sha256").hexdigest()
         metadata["input_filename"] = path.name
+    # Store table rows as records in the JSON export alongside the summary.
     payload = {
         "metadata": metadata,
         "summary": results["summary"],
         "enrollment_by_year": results["enrollment_by_year"].to_dict(orient="records"),
         "state_results": results["state_results"].to_dict(orient="records"),
     }
+    # Prepare every export in memory before replacing any existing files.
     root = Path(results_dir)
     outputs = {
         root / "analysis_results.json": json.dumps(payload, indent=2, allow_nan=False) + "\n",
