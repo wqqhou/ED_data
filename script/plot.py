@@ -286,7 +286,6 @@ def generate_figures(clean_dir, output_dir):
     print("\nAll visualizations complete!")
     #All done: )  hooray!! 
 
-
 def main():
     load_dotenv()
     args = parse_args()
