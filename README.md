@@ -211,7 +211,9 @@ Use `--help` with any script to see its options:
 ---
 ### 4. Complie the final PDF report
 
+```bash
 latexmk -pdf -output-directory=memo memo/ED_memo.tex
+```
 
 ## Tools
 
