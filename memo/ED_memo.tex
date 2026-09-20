@@ -4,8 +4,9 @@
 \usepackage{setspace}
 \usepackage{caption}
 
-% Support compilation from the repository root or from memo/.
-% Missing generated results are an error, never a reason to use old literal values.
+% Compile from the repository root or from memo/.
+% Numerical results come from script/results_output.py via memo/results.tex.
+% Keep the generated results file and figure files from the same analysis run.
 \IfFileExists{memo/ED_memo.tex}{%
     \newcommand{\ResultsFile}{memo/results.tex}%
     \graphicspath{{figure/}}%
@@ -13,81 +14,184 @@
     \newcommand{\ResultsFile}{results.tex}%
     \graphicspath{{../figure/}}%
 }
-\InputIfFileExists{\ResultsFile}{}{% 
+\InputIfFileExists{\ResultsFile}{}{%
     \PackageError{ED-memo}{Generated results.tex is missing}%
     {Run python script/plot.py from the repository root, then compile again.}%
 }
 
+% Expand the starting-year macros without hard-coding the following year.
+\newcommand{\AcademicYear}[1]{#1--\number\numexpr#1+1\relax}
+
 \begin{document}
 
 \noindent
-\textbf{DATE:} \today \\
-\textbf{SUBJECT:} Analysis of 2-Year Public Enrollment Trends and Federal Grant Allocation \\
+\textbf{DATE:} \today \newline
+\textbf{SUBJECT:} Analysis of 2-Year Public Enrollment Trends and Federal Grant Allocation\par
 \normalsize
 
 \subsection*{Executive Summary}
 \begin{itemize}
-    \item Enrollment: First-time, full-time undergraduate enrollment at public two-year colleges changed by \EnrollmentChangePct{}\% between \StudyStartYear{} and \StudyEndYear{} in the retained panel.
-    \item Grant allocation: The observed and simulated cross-state 90/10 ratios are \CurrentAidRatio{} and \SimulatedAidRatio{}, respectively. The simulated budget change in the retained sample is \$\BudgetChangeMillions{} million.
+    \item Enrollment: First-time, full-time undergraduate enrollment in the
+    defined public two-year subgroup changed by \EnrollmentChangePct{}\%
+    between academic years \AcademicYear{\StudyStartYear} and
+    \AcademicYear{\StudyEndYear} within the retained panel.
+    \item Grant allocation: The observed and simulated cross-state 90/10
+    ratios of aid per enrolled student are \CurrentAidRatio{} and
+    \SimulatedAidRatio{}, respectively. Holding enrollment fixed, simulated
+    minus observed grant spending is \$\BudgetChangeMillions{} million in
+    the retained sample for \AidAcademicYear{}.
 \end{itemize}
 
 \subsection*{Data \& Methodology}
-The complete-case balanced panel contains \PanelInstitutions{} undergraduate institutions and \PanelRows{} institution-year observations from unrevised IPEDS files. Institutions without all required eligible observations are excluded, so results describe only the retained sample.
+The analysis uses a complete-case balanced panel containing
+\PanelInstitutions{} undergraduate institutions and \PanelRows{}
+institution-year observations from unrevised IPEDS files. The study covers
+academic years \AcademicYear{\StudyStartYear} through
+\AcademicYear{\StudyEndYear} and restricts geography to the 50 states;
+Washington, DC, and the other excluded areas are outside the study scope.
+Year labels in the enrollment figure denote the academic year's starting year.
+
+For enrollment (\texttt{SCUGFFN}) and federal grants (\texttt{FGRNT\_T}),
+values with corresponding item-status codes J, L, N, or P are treated as
+missing. This is not an R-only restriction on all fields. Institutions are
+retained only if all required variables are observed and the geographic,
+undergraduate, and classification restrictions are satisfied in every year.
+The results therefore describe the retained institutions rather than the full
+population. The analysis does not establish whether this selection overstates
+or understates the population-wide enrollment change.
+
+The assignment's ``public two-year'' category is operationalized as public
+undergraduate institutions with \texttt{CONTROL} equal to 1 and
+\texttt{ICLEVEL} in $\{2,3\}$. Institutional level is used as a proxy for the
+assignment's non-bachelor's-granting definition; the subgroup is not limited
+to institutions coded \texttt{ICLEVEL} equal to 2. Subgroup membership is
+selected separately in each year, so the balanced institution panel does not
+necessarily imply an unchanged set of public two-year institutions.
 
 \subsection*{2-Year Public College Enrollment Trends}
-Total first-time, full-time enrollment across public two-year colleges was \EnrollmentStart{} in \StudyStartYear{} and \EnrollmentEnd{} in \StudyEndYear{}, a change of \EnrollmentChangePct{}\% (Figure~\ref{fig:enrollment}).
+Total first-time, full-time undergraduate enrollment in the defined public
+two-year subgroup was \EnrollmentStart{} in
+\AcademicYear{\StudyStartYear} and \EnrollmentEnd{} in
+\AcademicYear{\StudyEndYear}, a change of \EnrollmentChangePct{}\%
+(Figure~\ref{fig:enrollment}). These totals measure the specified entering
+cohort, not all enrolled students. The comparison is descriptive: it does not
+identify the causes of the change or establish a long-term structural trend.
 
+% Keep the grant and simulation discussion together on the next text page.
+\newpage
 \subsection*{Current Federal Grant Distribution (\AidAcademicYear)}
-Average federal grant aid per student was \$\NYAid{} in New York and \$\VTAid{} in Vermont (Figure~\ref{fig:ny-vt}). Across the \PanelStates{} included states, the unweighted mean of state rates was \$\CurrentAidMean{}, the sample standard deviation was \$\CurrentAidSD{}, and the 90/10 ratio was \CurrentAidRatio{} (Figure~\ref{fig:state-aid}). Each state rate is total grants divided by total enrollment within that state.
+The grant analysis includes all retained undergraduate institutions in
+\AidAcademicYear{}, not only the public two-year subgroup. Each state rate is
+total federal grant aid for the measured first-time, full-time undergraduate
+cohort divided by total enrollment in that cohort at retained institutions in
+the state. The denominator includes students not awarded federal grants;
+this is not the average grant among recipients. States identify institutional
+locations, not students' states of residence. Dollar amounts are not adjusted
+for inflation.
+
+Aid per enrolled student was \$\NYAid{} in New York and \$\VTAid{} in
+Vermont (Figure~\ref{fig:ny-vt}). Across the \PanelStates{} included states,
+the unweighted mean of state rates was \$\CurrentAidMean{}, the sample
+standard deviation was \$\CurrentAidSD{}, and the 90/10 ratio was
+\CurrentAidRatio{} (Figure~\ref{fig:state-aid}). States receive equal weight
+in these statistics; the mean is not the pooled, enrollment-weighted average.
+The 90/10 ratio is the 90th percentile divided by the 10th percentile of state
+rates, with linear percentile interpolation. Standard deviations use the
+sample formula. These differences do not, by themselves, establish geographic
+favoritism or inequity; the comparisons do not adjust for student need,
+eligibility, or institutional composition.
 
 \subsection*{Simulated Policy Impact}
-Under the specified institution-level formula, the observed and simulated standard deviations of state aid rates are \$\CurrentAidSD{} and \$\SimulatedAidSD{}, respectively. The corresponding highest-minus-lowest ranges are \$\CurrentAidRange{} and \$\SimulatedAidRange{}, and the 90/10 ratios are \CurrentAidRatio{} and \SimulatedAidRatio{} (Figures~\ref{fig:simulated-aid} and~\ref{fig:policy-spread}). Simulated minus observed spending is \$\BudgetChangeDollars{} in the retained sample.
+The simulation applies the specified allocation formula at the institution
+level:
+\[
+    G_i^{\mathrm{sim}} = 1750N_i + 0.15N_i^2,
+\]
+where $N_i$ is first-time, full-time undergraduate enrollment at institution
+$i$ and $G_i^{\mathrm{sim}}$ is its simulated federal grant amount in dollars.
+Observed \AidAcademicYear{} enrollment and the retained institutional sample
+are held fixed. The allocation is not rescaled to preserve the observed total
+budget. The exercise does not model changes in enrollment, institutional
+behavior, or implementation expenses.
+
+The observed and simulated standard deviations of state aid rates are
+\$\CurrentAidSD{} and \$\SimulatedAidSD{}, respectively. The corresponding
+highest-minus-lowest ranges are \$\CurrentAidRange{} and
+\$\SimulatedAidRange{}, and the 90/10 ratios are \CurrentAidRatio{} and
+\SimulatedAidRatio{} (Figures~\ref{fig:simulated-aid}
+and~\ref{fig:policy-spread}). These are comparisons of cross-state dispersion,
+not a welfare or equity assessment.
+
+Simulated minus observed grant spending is \$\BudgetChangeDollars{}
+(\$\BudgetChangeMillions{} million) within the retained sample for
+\AidAcademicYear{}. Positive values indicate additional grant spending;
+negative values indicate lower grant spending. This is a single-year,
+sample-specific difference, not a cumulative amount or a nationwide
+implementation-cost estimate. Figure~\ref{fig:winners-losers} identifies
+states with increases and decreases in grant totals at their retained
+institutions, rather than states that are better or worse off overall.
 
 \subsection*{Conclusion}
-The simulated budget difference is \$\BudgetChangeMillions{} million; positive values indicate additional spending and negative values indicate lower spending. Figure~\ref{fig:winners-losers} shows states with increases and decreases in simulated grant totals. These calculations describe allocation and dispersion, not causal effects or a welfare assessment.
+The analysis documents enrollment changes within the retained panel and
+compares observed grant allocations with a formula-based, fixed-enrollment
+simulation. The findings describe cross-state dispersion and simulated grant
+spending within that sample. They do not establish the causes of enrollment
+changes, the direction of selection bias, or the welfare effects of the
+alternative allocation.
 
 \clearpage
 \section*{Appendix: Figures}
 
+\noindent\textit{Notes applying to all figures:} Results describe retained
+institutions only. Enrollment refers to first-time, full-time undergraduates;
+public two-year status follows the operational definition in the methods.
+In Figures~\ref{fig:ny-vt}--\ref{fig:policy-spread}, per-student rates divide
+cohort grant totals by cohort enrollment, including nonrecipients, at all
+retained institutions in each state. Cross-state comparisons give each state
+equal weight. Simulated amounts use fixed observed enrollment and are not
+constrained to preserve observed grant spending. Figure~\ref{fig:winners-losers} classifies
+changes in grant totals, not welfare effects. Monetary amounts are in dollars
+without inflation adjustment.
+
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{figure1_2yr_enrollment.png}
-    \caption{Total First-Time, Full-Time Undergraduate Enrollment at Public 2-Year Colleges (\StudyStartYear{}--\StudyEndYear{})}
+    \caption{First-Time, Full-Time Undergraduate Enrollment in the Defined Public Two-Year Subgroup (\StudyStartYear{}--\StudyEndYear{}; Academic-Year Starting Years)}
     \label{fig:enrollment}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{figure2_ny_vt_aid.png}
-    \caption{Average Federal Grant Aid per Student: New York vs. Vermont (\AidAcademicYear)}
+    \caption{Federal Grant Aid per Enrolled Student at Retained Institutions: New York and Vermont (\AidAcademicYear{})}
     \label{fig:ny-vt}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{figure3_state_aid_map.png}
-    \caption{Average Federal Grant Aid per Student by State (\AidAcademicYear)}
+    \caption{Federal Grant Aid per Enrolled Student at Retained Institutions, by State (\AidAcademicYear{})}
     \label{fig:state-aid}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{figure4_simulated_aid_map.png}
-    \caption{Simulated Federal Grant Aid per Student by State}
+    \caption{Simulated Federal Grant Aid per Enrolled Student at Retained Institutions, by State (\AidAcademicYear{})}
     \label{fig:simulated-aid}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{figure5_policy_simulation.png}
-    \caption{Distribution of State Average Per-Student Aid: Observed and Simulated (\AidAcademicYear)}
+    \caption{Distribution of State-Level Aid per Enrolled Student: Observed and Simulated (\AidAcademicYear{})}
     \label{fig:policy-spread}
 \end{figure}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\linewidth]{figure6_winners_losers_map.png}
-    \caption{States with Increases and Decreases in Simulated Grant Totals}
+    \caption{States with Increases and Decreases in Simulated Grant Totals at Retained Institutions (\AidAcademicYear{})}
     \label{fig:winners-losers}
 \end{figure}
 \end{document}

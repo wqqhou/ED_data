@@ -7,3 +7,5 @@ venv/*
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+*.pyc
+*.json
