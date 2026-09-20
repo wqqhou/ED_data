@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import argparse  
 from pathlib import Path
 import numpy as np
-
+from analysis_validation import checked_divide
 
 def parse_args():  # Define the command-line options and defaults.
     parser = argparse.ArgumentParser(  
@@ -66,7 +66,8 @@ def plot_2yr_public_enrollment(df, output_dir):
     yearly_totals = two_year_publics.groupby('year')['enroll_ftug'].sum()
     enrollment_2010 = yearly_totals.loc[2010]
     enrollment_2015 = yearly_totals.loc[2015]
-    percent_change = ((enrollment_2015 - enrollment_2010) / enrollment_2010) * 100
+    
+    percent_change = checked_divide((enrollment_2015 - enrollment_2010), enrollment_2010, label="percent change") * 100
 
     print("\n--- 2-Year Public Enrollment Decline ---")
     print(f"2010 Total: {enrollment_2010:,.0f} students")
@@ -80,7 +81,8 @@ def plot_ny_vs_vt_aid(df, output_dir):
     # Filtering, aggregation, and calculation
     df_2015 = df[(df['year'] == 2015) & (df['stabbr'].isin(['NY', 'VT']))]
     state_totals = df_2015.groupby('stabbr')[['grant_federal', 'enroll_ftug']].sum().reset_index()
-    state_totals['per_student_aid'] = state_totals['grant_federal'] / state_totals['enroll_ftug']
+    
+    state_totals['per_student_aid'] = checked_divide(state_totals['grant_federal'], state_totals['enroll_ftug'], label="per student aid")
 
     print("Generating plot...")
 
@@ -112,9 +114,11 @@ def state_spread_analysis(df, output_dir):
     print("Filtering for state level data...")
     # Filtering, aggregation, and calculation
     df_2015 = df[df['year'] == 2015].copy()
-    state_totals = df_2015.groupby('stabbr')[['grant_federal', 'enroll_ftug']].sum().reset_index()
-    state_totals['per_student_aid'] = state_totals['grant_federal'] / state_totals['enroll_ftug']
-    
+
+    state_totals = df_2015.groupby("stabbr")[["grant_federal", "enroll_ftug"]].sum(min_count=1)
+    state_totals["per_student_aid"] = checked_divide(state_totals["grant_federal"], state_totals["enroll_ftug"], label="State aid per student")
+    state_totals = state_totals.reset_index()
+
     # Descriptive Statistics
     stats = {
         'Mean': state_totals['per_student_aid'].mean(),
@@ -131,7 +135,7 @@ def state_spread_analysis(df, output_dir):
     print("\nSummary Statistics for Average Per-Student Aid (2015):")
     for key, value in stats.items():
         print(f"{key}: ${value:,.2f}")
-    ratio_90_10 = stats['90th Percentile'] / stats['10th Percentile']
+    ratio_90_10 = checked_divide(stats['90th Percentile'], stats['10th Percentile'], label="90/10 aid ratio",)
     print(f"\n90/10 Ratio: {ratio_90_10:.2f}")
 
     # Heat Map 
@@ -164,8 +168,9 @@ def policy_simulation(df, output_dir):
     df_2015 = df[df['year'] == 2015].copy()
     df_2015['grant_simulated'] = (1750 * df_2015['enroll_ftug']) + (0.15 * (df_2015['enroll_ftug'] ** 2))
     state_totals = df_2015.groupby('stabbr')[['grant_federal', 'grant_simulated', 'enroll_ftug']].sum().reset_index()
-    state_totals['Current System'] = state_totals['grant_federal'] / state_totals['enroll_ftug']
-    state_totals['Proposed System'] = state_totals['grant_simulated'] / state_totals['enroll_ftug']
+    
+    state_totals['Current System'] = checked_divide(state_totals['grant_federal'], state_totals['enroll_ftug'], label="current system state total")
+    state_totals['Proposed System'] = checked_divide(state_totals['grant_simulated'],state_totals['enroll_ftug'], label="proposed system state total")
 
     print(f"{'Statistic':<20} | {'Current System':<15} | {'Proposed System':<15}")
     print("-" * 56)
@@ -175,8 +180,8 @@ def policy_simulation(df, output_dir):
         current_val = state_totals['Current System'].agg(metric)
         proposed_val = state_totals['Proposed System'].agg(metric)
         print(f"{metric.capitalize():<20} | ${current_val:,.2f}{'':<5} | ${proposed_val:,.2f}")
-    current_9010 = state_totals['Current System'].quantile(0.9) / state_totals['Current System'].quantile(0.1)
-    proposed_9010 = state_totals['Proposed System'].quantile(0.9) / state_totals['Proposed System'].quantile(0.1)
+    current_9010 = checked_divide(state_totals['Current System'].quantile(0.9), state_totals['Current System'].quantile(0.1), label="current_9010")
+    proposed_9010 = checked_divide(state_totals['Proposed System'].quantile(0.9), state_totals['Proposed System'].quantile(0.1), label="proposed_9010")
     print("-" * 56)
     print(f"{'90/10 Ratio':<20} | {current_9010:.2f}{'':<12} | {proposed_9010:.2f}")
     

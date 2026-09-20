@@ -163,9 +163,13 @@ Raw and processed data are excluded from version control and can be regenerated 
 
 ### 1. Install dependencies
 
+Tested with Python 3.11.1.
+This repository uses Kaleido for plotting, which require a compatible Chrome or Chromium installation.
+
 ```bash
 pip3 install -r requirements.txt
 ```
+
 
 ### 2. Configure the environment
 

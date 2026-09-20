@@ -45,7 +45,7 @@ def download_file(download_info):
     print(f"Started downloading: {url}")
     
     try:
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=15)
         response.raise_for_status()
         
         with open(file_path, 'wb') as file:
