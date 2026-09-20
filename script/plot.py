@@ -225,7 +225,9 @@ def policy_simulation(df, output_dir):
         y='Per-Student Aid',
         palette=['#95a5a6', '#2ecc71'], 
         width=0.4,
-        fliersize=5 
+        fliersize=5, 
+        hue="Allocation Model",
+        legend=False
     )
 
     plt.xlabel('Allocation Framework', fontsize=12, labelpad=10)
