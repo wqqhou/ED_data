@@ -1,0 +1,608 @@
+{
+  "metadata": {
+    "schema_version": 1,
+    "generated_utc": "2026-09-20T07:32:34.347041+00:00",
+    "python_version": "3.11.1",
+    "pandas_version": "3.0.3",
+    "numpy_version": "2.4.6",
+    "input_sha256": "b889ef6d6550c030589134da17ada1b9005eff41ca658c46da904671352ed5c5",
+    "input_filename": "cleaned_panel.parquet"
+  },
+  "summary": {
+    "definitions": {
+      "start_year": 2010,
+      "end_year": 2015,
+      "aid_year": 2015,
+      "year_convention": "Academic year starting year",
+      "enrollment_sample": "public == 1 and degree_bach == 0",
+      "aid_sample": "All retained institutions in the aid year",
+      "state_rate": "Sum of grants divided by sum of enrollment within state",
+      "dispersion_weighting": "Unweighted across included state rates",
+      "standard_deviation_ddof": 1,
+      "quantile_interpolation": "linear",
+      "policy_formula": "1750 * enroll_ftug + 0.15 * enroll_ftug**2, per institution",
+      "policy_linear": 1750.0,
+      "policy_quadratic": 0.15,
+      "money_unit": "Dollars as recorded; no inflation adjustment",
+      "change_percent_unit": "Percent, not fraction or percentage points",
+      "budget_scope": "Retained sample only, simulated minus observed"
+    },
+    "sample": {
+      "institutions": 5148,
+      "institution_years": 30888,
+      "states_in_aid_year": 50
+    },
+    "enrollment": {
+      "start": 806760.0,
+      "end": 672435.0,
+      "change_percent": -16.649933065595715
+    },
+    "ny_vt": {
+      "NY": 2315.1691510045366,
+      "VT": 1364.2175271536973,
+      "NY_minus_VT": 950.9516238508393
+    },
+    "current": {
+      "mean": 1880.2214404977983,
+      "median": 1823.7089657176382,
+      "std": 373.97345947116816,
+      "min": 1145.0474627915153,
+      "max": 2774.194127679497,
+      "p10": 1440.1381012560244,
+      "p25": 1573.7929924828268,
+      "p75": 2156.0416171975235,
+      "p90": 2343.6554322325883,
+      "range": 1629.1466648879816,
+      "ratio_90_10": 1.6273824226916547
+    },
+    "simulated": {
+      "mean": 2033.8828297811751,
+      "median": 2014.7778138989893,
+      "std": 120.00334146992317,
+      "min": 1865.8373734791944,
+      "max": 2577.2076469386134,
+      "p10": 1913.0623430347998,
+      "p25": 1975.555865536732,
+      "p75": 2077.953430168992,
+      "p90": 2147.871720953428,
+      "range": 711.370273459419,
+      "ratio_90_10": 1.1227400553743254
+    },
+    "budget": {
+      "current_total": 5284955008.0,
+      "simulated_total": 5419213235.650001,
+      "change": 134258227.64999992,
+      "states_net_increase": 30,
+      "states_net_decrease": 20,
+      "states_unchanged": 0
+    }
+  },
+  "enrollment_by_year": [
+    {
+      "year": 2010,
+      "enroll_ftug": 806760.0
+    },
+    {
+      "year": 2011,
+      "enroll_ftug": 758862.0
+    },
+    {
+      "year": 2012,
+      "enroll_ftug": 723955.0
+    },
+    {
+      "year": 2013,
+      "enroll_ftug": 722749.0
+    },
+    {
+      "year": 2014,
+      "enroll_ftug": 689960.0
+    },
+    {
+      "year": 2015,
+      "enroll_ftug": 672435.0
+    }
+  ],
+  "state_results": [
+    {
+      "stabbr": "AK",
+      "grant_federal": 7516960.0,
+      "grant_simulated": 7291390.25,
+      "enroll_ftug": 3875.0,
+      "per_student_aid": 1939.8606451612902,
+      "simulated_aid_per_student": 1881.6490967741936,
+      "budget_impact": -225569.75,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "AL",
+      "grant_federal": 98232102.0,
+      "grant_simulated": 95160044.55,
+      "enroll_ftug": 45351.0,
+      "per_student_aid": 2166.04048422306,
+      "simulated_aid_per_student": 2098.300909572005,
+      "budget_impact": -3072057.450000003,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "AR",
+      "grant_federal": 62771779.0,
+      "grant_simulated": 53054294.2,
+      "enroll_ftug": 26686.0,
+      "per_student_aid": 2352.2363411526644,
+      "simulated_aid_per_student": 1988.0946638686953,
+      "budget_impact": -9717484.799999997,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "AZ",
+      "grant_federal": 109795674.0,
+      "grant_simulated": 120832336.45,
+      "enroll_ftug": 53503.0,
+      "per_student_aid": 2052.140515485113,
+      "simulated_aid_per_student": 2258.421704390408,
+      "budget_impact": 11036662.450000003,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "CA",
+      "grant_federal": 670342809.0,
+      "grant_simulated": 629393356.65,
+      "enroll_ftug": 302025.0,
+      "per_student_aid": 2219.494442513037,
+      "simulated_aid_per_student": 2083.911453190961,
+      "budget_impact": -40949452.350000024,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "CO",
+      "grant_federal": 66548401.0,
+      "grant_simulated": 84504416.75,
+      "enroll_ftug": 40625.0,
+      "per_student_aid": 1638.1144861538462,
+      "simulated_aid_per_student": 2080.10872,
+      "budget_impact": 17956015.75,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "CT",
+      "grant_federal": 58087398.0,
+      "grant_simulated": 60863465.5,
+      "enroll_ftug": 31504.0,
+      "per_student_aid": 1843.810246317928,
+      "simulated_aid_per_student": 1931.928183722702,
+      "budget_impact": 2776067.5,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "DE",
+      "grant_federal": 15128787.0,
+      "grant_simulated": 20367969.8,
+      "enroll_ftug": 9494.0,
+      "per_student_aid": 1593.5103223088265,
+      "simulated_aid_per_student": 2145.3517800716245,
+      "budget_impact": 5239182.800000001,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "FL",
+      "grant_federal": 463290161.0,
+      "grant_simulated": 454006053.5,
+      "enroll_ftug": 176162.0,
+      "per_student_aid": 2629.909747845733,
+      "simulated_aid_per_student": 2577.2076469386134,
+      "budget_impact": -9284107.5,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "GA",
+      "grant_federal": 132149477.0,
+      "grant_simulated": 113772058.05,
+      "enroll_ftug": 56409.0,
+      "per_student_aid": 2342.701997908135,
+      "simulated_aid_per_student": 2016.9132239536243,
+      "budget_impact": -18377418.950000003,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "HI",
+      "grant_federal": 12132912.0,
+      "grant_simulated": 13314985.299999999,
+      "enroll_ftug": 7090.0,
+      "per_student_aid": 1711.2710860366715,
+      "simulated_aid_per_student": 1877.9951057827925,
+      "budget_impact": 1182073.2999999989,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "IA",
+      "grant_federal": 52408601.0,
+      "grant_simulated": 70996515.75,
+      "enroll_ftug": 33681.0,
+      "per_student_aid": 1556.0286511683146,
+      "simulated_aid_per_student": 2107.9099714972835,
+      "budget_impact": 18587914.75,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "ID",
+      "grant_federal": 20102769.0,
+      "grant_simulated": 22431130.4,
+      "enroll_ftug": 11336.0,
+      "per_student_aid": 1773.3564749470713,
+      "simulated_aid_per_student": 1978.7517995765702,
+      "budget_impact": 2328361.3999999985,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "IL",
+      "grant_federal": 168219800.0,
+      "grant_simulated": 175001010.2,
+      "enroll_ftug": 86480.0,
+      "per_student_aid": 1945.1873265494912,
+      "simulated_aid_per_student": 2023.600950508788,
+      "budget_impact": 6781210.199999988,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "IN",
+      "grant_federal": 105305428.0,
+      "grant_simulated": 134852449.85,
+      "enroll_ftug": 58997.0,
+      "per_student_aid": 1784.9285217892436,
+      "simulated_aid_per_student": 2285.7509678458227,
+      "budget_impact": 29547021.849999994,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "KS",
+      "grant_federal": 51372560.0,
+      "grant_simulated": 56877676.4,
+      "enroll_ftug": 28712.0,
+      "per_student_aid": 1789.2365561437725,
+      "simulated_aid_per_student": 1980.9722903315687,
+      "budget_impact": 5505116.3999999985,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "KY",
+      "grant_federal": 71773465.0,
+      "grant_simulated": 69989366.75,
+      "enroll_ftug": 34157.0,
+      "per_student_aid": 2101.281289340399,
+      "simulated_aid_per_student": 2049.049001668765,
+      "budget_impact": -1784098.25,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "LA",
+      "grant_federal": 100689677.0,
+      "grant_simulated": 85662590.4,
+      "enroll_ftug": 42486.0,
+      "per_student_aid": 2369.949559855011,
+      "simulated_aid_per_student": 2016.254540319164,
+      "budget_impact": -15027086.599999994,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "MA",
+      "grant_federal": 110176178.0,
+      "grant_simulated": 137045459.15,
+      "enroll_ftug": 70121.0,
+      "per_student_aid": 1571.2294177207968,
+      "simulated_aid_per_student": 1954.4139294933045,
+      "budget_impact": 26869281.150000006,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "MD",
+      "grant_federal": 71392203.0,
+      "grant_simulated": 77353501.75,
+      "enroll_ftug": 39583.0,
+      "per_student_aid": 1803.6076851173484,
+      "simulated_aid_per_student": 1954.2101849278731,
+      "budget_impact": 5961298.75,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "ME",
+      "grant_federal": 19741860.0,
+      "grant_simulated": 18249755.35,
+      "enroll_ftug": 9781.0,
+      "per_student_aid": 2018.3887128105512,
+      "simulated_aid_per_student": 1865.8373734791944,
+      "budget_impact": -1492104.6499999985,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "MI",
+      "grant_federal": 138369909.0,
+      "grant_simulated": 157762657.15,
+      "enroll_ftug": 73489.0,
+      "per_student_aid": 1882.865585325695,
+      "simulated_aid_per_student": 2146.7519921348776,
+      "budget_impact": 19392748.150000006,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "MN",
+      "grant_federal": 61867643.0,
+      "grant_simulated": 77835233.1,
+      "enroll_ftug": 39120.0,
+      "per_student_aid": 1581.483716768916,
+      "simulated_aid_per_student": 1989.6531978527605,
+      "budget_impact": 15967590.099999994,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "MO",
+      "grant_federal": 93466180.0,
+      "grant_simulated": 100037365.75,
+      "enroll_ftug": 49477.0,
+      "per_student_aid": 1889.0834124946946,
+      "simulated_aid_per_student": 2021.8963508296783,
+      "budget_impact": 6571185.75,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "MS",
+      "grant_federal": 82956727.0,
+      "grant_simulated": 60063338.75,
+      "enroll_ftug": 29903.0,
+      "per_student_aid": 2774.194127679497,
+      "simulated_aid_per_student": 2008.605783700632,
+      "budget_impact": -22893388.25,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "MT",
+      "grant_federal": 12479895.0,
+      "grant_simulated": 15504996.85,
+      "enroll_ftug": 7987.0,
+      "per_student_aid": 1562.5259797170402,
+      "simulated_aid_per_student": 1941.2791849255038,
+      "budget_impact": 3025101.8499999996,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "NC",
+      "grant_federal": 156279191.0,
+      "grant_simulated": 147488626.15,
+      "enroll_ftug": 73507.0,
+      "per_student_aid": 2126.0450161209137,
+      "simulated_aid_per_student": 2006.4568836981514,
+      "budget_impact": -8790564.849999994,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "ND",
+      "grant_federal": 9770690.0,
+      "grant_simulated": 16660045.450000001,
+      "enroll_ftug": 8533.0,
+      "per_student_aid": 1145.0474627915153,
+      "simulated_aid_per_student": 1952.4253427868277,
+      "budget_impact": 6889355.450000001,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "NE",
+      "grant_federal": 24842936.0,
+      "grant_simulated": 33844005.949999996,
+      "enroll_ftug": 16655.0,
+      "per_student_aid": 1491.6202942059442,
+      "simulated_aid_per_student": 2032.0628009606721,
+      "budget_impact": 9001069.949999996,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "NH",
+      "grant_federal": 20199479.0,
+      "grant_simulated": 27959684.8,
+      "enroll_ftug": 13960.0,
+      "per_student_aid": 1446.954083094556,
+      "simulated_aid_per_student": 2002.8427507163324,
+      "budget_impact": 7760205.800000001,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "NJ",
+      "grant_federal": 147639055.0,
+      "grant_simulated": 136065157.25,
+      "enroll_ftug": 67337.0,
+      "per_student_aid": 2192.5398369395725,
+      "simulated_aid_per_student": 2020.6596262084738,
+      "budget_impact": -11573897.75,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "NM",
+      "grant_federal": 43903037.0,
+      "grant_simulated": 33143709.3,
+      "enroll_ftug": 16902.0,
+      "per_student_aid": 2597.5054431428234,
+      "simulated_aid_per_student": 1960.9341675541357,
+      "budget_impact": -10759327.7,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "NV",
+      "grant_federal": 34435949.0,
+      "grant_simulated": 34233584.25,
+      "enroll_ftug": 16491.0,
+      "per_student_aid": 2088.166211873143,
+      "simulated_aid_per_student": 2075.8949881753683,
+      "budget_impact": -202364.75,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "NY",
+      "grant_federal": 442965944.0,
+      "grant_simulated": 388553647.0,
+      "enroll_ftug": 191332.0,
+      "per_student_aid": 2315.1691510045366,
+      "simulated_aid_per_student": 2030.7823416887923,
+      "budget_impact": -54412297.0,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "OH",
+      "grant_federal": 172472472.0,
+      "grant_simulated": 200349227.25,
+      "enroll_ftug": 96771.0,
+      "per_student_aid": 1782.2743590538487,
+      "simulated_aid_per_student": 2070.3436695910964,
+      "budget_impact": 27876755.25,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "OK",
+      "grant_federal": 73561088.0,
+      "grant_simulated": 71901294.65,
+      "enroll_ftug": 36401.0,
+      "per_student_aid": 2020.8534930359056,
+      "simulated_aid_per_student": 1975.2560273069423,
+      "budget_impact": -1659793.349999994,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "OR",
+      "grant_federal": 43613168.0,
+      "grant_simulated": 51058442.45,
+      "enroll_ftug": 25673.0,
+      "per_student_aid": 1698.7951544424104,
+      "simulated_aid_per_student": 1988.7992229190202,
+      "budget_impact": 7445274.450000003,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "PA",
+      "grant_federal": 214842852.0,
+      "grant_simulated": 245148863.7,
+      "enroll_ftug": 122688.0,
+      "per_student_aid": 1751.1317488262912,
+      "simulated_aid_per_student": 1998.14866735133,
+      "budget_impact": 30306011.699999988,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "RI",
+      "grant_federal": 22659644.0,
+      "grant_simulated": 29455042.400000002,
+      "enroll_ftug": 14846.0,
+      "per_student_aid": 1526.3130809645695,
+      "simulated_aid_per_student": 1984.0389599892228,
+      "budget_impact": 6795398.400000002,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "SC",
+      "grant_federal": 81078941.0,
+      "grant_simulated": 80408749.25,
+      "enroll_ftug": 39899.0,
+      "per_student_aid": 2032.104589087446,
+      "simulated_aid_per_student": 2015.307382390536,
+      "budget_impact": -670191.75,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "SD",
+      "grant_federal": 12023224.0,
+      "grant_simulated": 15037980.75,
+      "enroll_ftug": 7929.0,
+      "per_student_aid": 1516.3607012233574,
+      "simulated_aid_per_student": 1896.5797389330307,
+      "budget_impact": 3014756.75,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "TN",
+      "grant_federal": 152024460.0,
+      "grant_simulated": 129198911.75,
+      "enroll_ftug": 65369.0,
+      "per_student_aid": 2325.635392923251,
+      "simulated_aid_per_student": 1976.4553802261012,
+      "budget_impact": -22825548.25,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "TX",
+      "grant_federal": 450408987.0,
+      "grant_simulated": 422682963.15,
+      "enroll_ftug": 197391.0,
+      "per_student_aid": 2281.8111616031124,
+      "simulated_aid_per_student": 2141.348709667614,
+      "budget_impact": -27726023.850000024,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "UT",
+      "grant_federal": 35182185.0,
+      "grant_simulated": 58586062.4,
+      "enroll_ftug": 26900.0,
+      "per_student_aid": 1307.8879182156134,
+      "simulated_aid_per_student": 2177.920535315985,
+      "budget_impact": 23403877.4,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "VA",
+      "grant_federal": 110095368.0,
+      "grant_simulated": 146026269.85,
+      "enroll_ftug": 67669.0,
+      "per_student_aid": 1626.9690404764367,
+      "simulated_aid_per_student": 2157.949280320383,
+      "budget_impact": 35930901.849999994,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "VT",
+      "grant_federal": 9168906.0,
+      "grant_simulated": 12870000.85,
+      "enroll_ftug": 6721.0,
+      "per_student_aid": 1364.2175271536973,
+      "simulated_aid_per_student": 1914.893743490552,
+      "budget_impact": 3701094.8499999996,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "WA",
+      "grant_federal": 67120868.0,
+      "grant_simulated": 92529715.39999999,
+      "enroll_ftug": 44522.0,
+      "per_student_aid": 1507.5887875656979,
+      "simulated_aid_per_student": 2078.2919770001345,
+      "budget_impact": 25408847.39999999,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "WI",
+      "grant_federal": 60389810.0,
+      "grant_simulated": 90967798.25,
+      "enroll_ftug": 43799.0,
+      "per_student_aid": 1378.79426470924,
+      "simulated_aid_per_student": 2076.937789675563,
+      "budget_impact": 30577988.25,
+      "outcome": "Net increase"
+    },
+    {
+      "stabbr": "WV",
+      "grant_federal": 37648153.0,
+      "grant_simulated": 34209992.2,
+      "enroll_ftug": 16984.0,
+      "per_student_aid": 2216.68352567122,
+      "simulated_aid_per_student": 2014.2482454074425,
+      "budget_impact": -3438160.799999997,
+      "outcome": "Net decrease"
+    },
+    {
+      "stabbr": "WY",
+      "grant_federal": 6309246.0,
+      "grant_simulated": 8610042.6,
+      "enroll_ftug": 4578.0,
+      "per_student_aid": 1378.1664482306685,
+      "simulated_aid_per_student": 1880.7432503276539,
+      "budget_impact": 2300796.5999999996,
+      "outcome": "Net increase"
+    }
+  ]
+}
