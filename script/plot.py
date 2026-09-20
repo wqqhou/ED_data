@@ -63,7 +63,7 @@ def plot_2yr_public_enrollment(df, output_dir):
     print(f"Success! High-resolution plot saved to: {plot_path}")
 
     two_year_publics = df[(df['public'] == 1) & (df['degree_bach'] == 0)]
-    yearly_totals = two_year_publics.groupby('year')['enroll_ftug'].sum()
+    yearly_totals = two_year_publics.groupby('year')['enroll_ftug'].sum(min_count=1)
     enrollment_2010 = yearly_totals.loc[2010]
     enrollment_2015 = yearly_totals.loc[2015]
     
@@ -80,7 +80,7 @@ def plot_ny_vs_vt_aid(df, output_dir):
 
     # Filtering, aggregation, and calculation
     df_2015 = df[(df['year'] == 2015) & (df['stabbr'].isin(['NY', 'VT']))]
-    state_totals = df_2015.groupby('stabbr')[['grant_federal', 'enroll_ftug']].sum().reset_index()
+    state_totals = df_2015.groupby('stabbr')[['grant_federal', 'enroll_ftug']].sum(min_count=1).reset_index()
     
     state_totals['per_student_aid'] = checked_divide(state_totals['grant_federal'], state_totals['enroll_ftug'], label="per student aid")
 
@@ -167,7 +167,7 @@ def policy_simulation(df, output_dir):
     # Filtering, aggregation, and calculation
     df_2015 = df[df['year'] == 2015].copy()
     df_2015['grant_simulated'] = (1750 * df_2015['enroll_ftug']) + (0.15 * (df_2015['enroll_ftug'] ** 2))
-    state_totals = df_2015.groupby('stabbr')[['grant_federal', 'grant_simulated', 'enroll_ftug']].sum().reset_index()
+    state_totals = df_2015.groupby('stabbr')[['grant_federal', 'grant_simulated', 'enroll_ftug']].sum(min_count=1).reset_index()
     
     state_totals['Current System'] = checked_divide(state_totals['grant_federal'], state_totals['enroll_ftug'], label="current system state total")
     state_totals['Proposed System'] = checked_divide(state_totals['grant_simulated'],state_totals['enroll_ftug'], label="proposed system state total")
