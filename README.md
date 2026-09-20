@@ -134,8 +134,6 @@ These results should be interpreted as a descriptive and counterfactual exercise
 ED_data/
 │
 ├── script/
-│   ├── main.py              # Run the complete download, clean, and plot workflow
-│   ├── cli.py               # Shared command-line arguments and directory defaults
 │   ├── data_download.py     # Download and extract annual IPEDS files
 │   ├── data_clean.py        # Merge, clean, and construct balanced panel
 │   └── plot.py              # Statistical analysis, simulation, and figures
@@ -149,9 +147,10 @@ ED_data/
 │   └── figure6_winners_losers_map.png
 |
 ├── memo/
-│   └──ED_memo.tex
+│   ├── ED_memo.pdf
+│   └── ED_memo.tex
 |
-├── .env                     
+├── .env.example                     
 ├── requirements.txt
 └── README.md
 ```
@@ -165,7 +164,7 @@ Raw and processed data are excluded from version control and can be regenerated 
 ### 1. Install dependencies
 
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ### 2. Configure the environment
@@ -177,34 +176,42 @@ NCES_HD_URL_TEMPLATE=https://nces.ed.gov/ipeds/datacenter/data/HD{}.zip
 NCES_SFA_URL_TEMPLATE=https://nces.ed.gov/ipeds/datacenter/data/SFA{}.zip
 ```
 
-Relative directory paths are resolved against the repository root by default. To use a different base directory, optionally set `BASE_PROJECT_PATH` in `.env`. Absolute paths and paths beginning with `~` are also supported.
-
-
 ### 3. Run individual stages
 
+If no command-line arguments are provided, the pipeline uses the following defaults:
+
+- Academic years: `2010` through `2015`
+- Raw downloaded files: `data/raw`
+- Extracted/interim files: `data/interim`
+- Cleaned datasets: `data/cleaned`
+- Generated figures: `figure`
+
+Each stage accepts these arguments:
+
+- `data_download.py` accepts `--start-year`, `--end-year`, `--download-dir`, and `--extract-dir`.
+- `data_clean.py` accepts `--start-year`, `--end-year`, `--interim-dir`, and `--cleaned-dir`.
+- `plot.py` accepts `--cleaned-dir` and `--output-dir`, and reads `cleaned_panel.parquet` from the cleaned-data directory.
+
 ```bash
-python script/data_download.py
-python script/data_clean.py
-python script/plot.py
+python3 script/data_download.py
+python3 script/data_clean.py
+python3 script/plot.py
 ```
-
-Each stage uses these defaults:
-
-* `data_download.py` accepts `--start-year`, `--end-year`, `--download-dir`, and `--extract-dir`.
-* `data_clean.py` accepts `--start-year`, `--end-year`, `--extract-dir`, and `--clean-dir`.
-* `plot.py` accepts `--clean-dir` and `--output-dir`, and reads `cleaned_panel.parquet` from the clean directory.
 
 When running stages separately with custom directories, pass the same extract directory to download and cleaning, and the same clean directory to cleaning and plotting. For example:
 
 ```bash
-python script/data_download.py --extract-dir data/extracted
-python script/data_clean.py --extract-dir data/extracted --clean-dir data/custom_clean
-python script/plot.py --clean-dir data/custom_clean --output-dir figure/custom
+python3 script/data_download.py --extract-dir data/interim
+python3 script/data_clean.py --interim-dir data/interim --cleaned-dir data/cleaned
+python3 script/plot.py --cleaned-dir data/cleaned --output-dir figure
 ```
 
 Use `--help` with any script to see its options:
 
 ---
+### 4. Complie the final PDF report
+
+latexmk -pdf -output-directory=memo memo/ED_memo.tex
 
 ## Tools
 

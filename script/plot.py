@@ -5,6 +5,7 @@ import seaborn as sns
 import plotly.express as px
 from dotenv import load_dotenv
 import argparse  
+from pathlib import Path
 
 
 def parse_args():  # Define the command-line options and defaults.
@@ -289,8 +290,10 @@ def generate_figures(clean_dir, output_dir):
 def main():
     load_dotenv()
     args = parse_args()
-    clean_dir = args.cleaned_dir
-    output_dir = args.output_dir
+    repo_root = Path(__file__).resolve().parents[1]
+    base_path = Path(os.getenv("BASE_PROJECT_PATH", repo_root)).expanduser().resolve()
+    clean_dir = base_path / args.cleaned_dir
+    output_dir = base_path / args.output_dir
     generate_figures(clean_dir, output_dir)
 
 if __name__ == "__main__":

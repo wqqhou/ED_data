@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from dotenv import load_dotenv
 import argparse  
+from pathlib import Path
 
 def parse_args():  # Define the command-line options and defaults.
     parser = argparse.ArgumentParser(  
@@ -153,12 +154,14 @@ def main():
 
     args = parse_args()  
     load_dotenv()
-    base_path = os.getenv("BASE_PROJECT_PATH", ".")
+    repo_root = Path(__file__).resolve().parents[1]
 
-    interim_dir = os.path.join(base_path, args.interim_dir)
+    base_path = Path(os.getenv("BASE_PROJECT_PATH", repo_root)).expanduser().resolve()
+
+    interim_dir = base_path / args.interim_dir
     os.makedirs(interim_dir, exist_ok=True)
 
-    clean_dir = os.path.join(base_path, args.cleaned_dir)
+    clean_dir = base_path / args.cleaned_dir
     os.makedirs(clean_dir, exist_ok=True)
     
     clean_data = process_ipeds_data(interim_dir, args.start_year, args.end_year)
@@ -166,9 +169,9 @@ def main():
     if clean_data.empty:
         raise ValueError("No institutions satisfy the balanced-panel requirements.")
 
-    csv_path = os.path.join(clean_dir, "cleaned_panel.csv")
-    parquet_path = os.path.join(clean_dir, "cleaned_panel.parquet")
-        
+    csv_path = clean_dir / "cleaned_panel.csv"
+    parquet_path = clean_dir / "cleaned_panel.parquet"
+
     clean_data.to_csv(csv_path, index=False)
     clean_data.to_parquet(parquet_path, index=False)
         

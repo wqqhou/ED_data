@@ -4,6 +4,7 @@ import requests
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
+from pathlib import Path
 
 def parse_args():  # Define the command-line options and defaults.
     parser = argparse.ArgumentParser(  
@@ -62,7 +63,9 @@ def main():
     args = parse_args()  
     load_dotenv()
     
-    base_path = os.getenv("BASE_PROJECT_PATH")
+    repo_root = Path(__file__).resolve().parents[1]
+    base_path = Path(os.getenv("BASE_PROJECT_PATH", repo_root)).expanduser().resolve()
+    
     hd_url_template = os.getenv("NCES_HD_URL_TEMPLATE")
     sfa_url_template = os.getenv("NCES_SFA_URL_TEMPLATE")
     
@@ -70,10 +73,10 @@ def main():
         raise ValueError("Missing configuration. Please check your .env file.")
         
     # Resolve the selected directories relative to BASE_PROJECT_PATH; absolute paths also work.
-    download_dir = os.path.join(base_path, args.download_dir)  
+    download_dir = base_path / args.download_dir  
     os.makedirs(download_dir, exist_ok=True)
     
-    extract_dir = os.path.join(base_path, args.extract_dir)  
+    extract_dir = base_path / args.extract_dir 
     os.makedirs(extract_dir, exist_ok=True)
     
     start_year = args.start_year  
@@ -87,8 +90,8 @@ def main():
         sfa_url = sfa_url_template.format(academic_yr)
         
         tasks.extend([
-            (hd_url, os.path.join(download_dir, f'HD{year}.zip')),
-            (sfa_url, os.path.join(download_dir, f'SFA{academic_yr}.zip'))
+            (hd_url, download_dir / f'HD{year}.zip'),
+            (sfa_url, download_dir / f'SFA{academic_yr}.zip')
         ])
         
     print(f"\nQueued {len(tasks)} files for download...")
