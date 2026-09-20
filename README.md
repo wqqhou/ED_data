@@ -148,7 +148,7 @@ ED_data/
 │   ├── figure5_policy_simulation.png
 │   └── figure6_winners_losers_map.png
 │
-├── results/
+├── result/
 │   ├── analysis_results.json
 │   ├── enrollment_by_year.csv
 │   └── state_results.csv
