@@ -147,7 +147,12 @@ ED_data/
 │   ├── figure4_simulated_aid_map.png
 │   ├── figure5_policy_simulation.png
 │   └── figure6_winners_losers_map.png
-|
+│
+├── results/
+│   ├── analysis_results.json
+│   ├── enrollment_by_year.csv
+│   └── state_results.csv
+│
 ├── memo/
 │   ├── ED_memo.pdf
 │   └── ED_memo.tex
@@ -156,9 +161,6 @@ ED_data/
 ├── requirements.txt
 └── README.md
 ```
-
-Raw and processed data are excluded from version control and can be regenerated locally using the scripts in this repository.
-
 ---
 
 ## Reproducing the Analysis
