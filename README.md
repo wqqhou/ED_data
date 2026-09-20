@@ -141,15 +141,17 @@ ED_data/
 │   └── plot.py              # Statistical analysis, simulation, and figures
 │
 ├── figure/
-│   ├── ED_memo.pdf
 │   ├── figure1_2yr_enrollment.png
 │   ├── figure2_ny_vt_aid.png
 │   ├── figure3_state_aid_map.png
 │   ├── figure4_simulated_aid_map.png
 │   ├── figure5_policy_simulation.png
 │   └── figure6_winners_losers_map.png
-│
-├── .env                     # Local IPEDS URL configuration (not versioned)
+|
+├── memo/
+│   └──ED_memo.tex
+|
+├── .env                     
 ├── requirements.txt
 └── README.md
 ```
@@ -177,36 +179,8 @@ NCES_SFA_URL_TEMPLATE=https://nces.ed.gov/ipeds/datacenter/data/SFA{}.zip
 
 Relative directory paths are resolved against the repository root by default. To use a different base directory, optionally set `BASE_PROJECT_PATH` in `.env`. Absolute paths and paths beginning with `~` are also supported.
 
-### 3. Run the complete workflow
 
-```bash
-python script/main.py
-```
-
-This downloads and extracts the data, exports the clean panel, and generates the figures using these defaults. No keyboard input is required.
-
-| Argument | Default | Purpose |
-| --- | --- | --- |
-| `--start-year` | `2010` | First academic year, coded by starting year |
-| `--end-year` | `2015` | Last academic year, inclusive |
-| `--download-dir` | `data/raw` | Downloaded ZIP files |
-| `--extract-dir` | `data/interim` | Extracted annual CSV files |
-| `--clean-dir` | `data/cleaned` | Cleaned CSV and Parquet panel |
-| `--output-dir` | `figure` | Generated figures |
-
-Override only the values you want to change:
-
-```bash
-python script/main.py \
-    --download-dir data/downloads \
-    --extract-dir data/extracted \
-    --clean-dir data/custom_clean \
-    --output-dir figure/custom
-```
-
-The analysis compares 2010 with 2015 and uses 2015 for aid and policy calculations, so the complete workflow requires a year range containing both 2010 and 2015. The download and cleaning scripts can also process other year ranges.
-
-### 4. Run individual stages
+### 3. Run individual stages
 
 ```bash
 python script/data_download.py
@@ -214,7 +188,7 @@ python script/data_clean.py
 python script/plot.py
 ```
 
-Each stage uses the same relevant defaults:
+Each stage uses these defaults:
 
 * `data_download.py` accepts `--start-year`, `--end-year`, `--download-dir`, and `--extract-dir`.
 * `data_clean.py` accepts `--start-year`, `--end-year`, `--extract-dir`, and `--clean-dir`.
@@ -229,10 +203,6 @@ python script/plot.py --clean-dir data/custom_clean --output-dir figure/custom
 ```
 
 Use `--help` with any script to see its options:
-
-```bash
-python script/main.py --help
-```
 
 ---
 
