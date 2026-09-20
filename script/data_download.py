@@ -56,7 +56,7 @@ def download_file(download_info):
         return f"Successfully saved: {file_path}"
     
     except requests.exceptions.RequestException as e:
-        return f"Failed to download {url}. Error: {e}"
+            raise RuntimeError(f"Failed to download {url}") from e
 
 def main():
     # Load configuration, download files concurrently, and extract them using command-line options.
@@ -117,10 +117,10 @@ def main():
                     for target_file in files_to_keep:
                         zip_ref.extract(target_file, extract_dir)
 
-            except zipfile.BadZipFile:
-                print(f"Error: {filename} is corrupted or not a valid ZIP file.")
+            except zipfile.BadZipFile as e:
+                raise RuntimeError(f"{filename} is corrupted or not a valid ZIP file.") from e
         else:
-            print(f"Skipping {file_path} (File not found).")
+            raise FileNotFoundError(f"Downloaded ZIP file not found: {file_path}")
             
     print(f"\nAll files successfully extracted to: {extract_dir}")
 

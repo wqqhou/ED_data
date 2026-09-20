@@ -192,6 +192,8 @@ Each stage accepts these arguments:
 - `data_clean.py` accepts `--start-year`, `--end-year`, `--interim-dir`, and `--cleaned-dir`.
 - `plot.py` accepts `--cleaned-dir` and `--output-dir`, and reads `cleaned_panel.parquet` from the cleaned-data directory.
 
+The data acquisition and cleaning scripts support custom year ranges through the `--start-year` and `--end-year` options. However, `plot.py` is written specifically to reproduce the original assignment, which analyzes academic years **2010-11 through 2015-16** and uses **2015-16** for the federal grant analysis. Accordingly, the default `2010`–`2015` configuration should be used when reproducing the reported results and figures. Custom year ranges may require corresponding modifications to `plot.py`.
+
 ```bash
 python3 script/data_download.py
 python3 script/data_clean.py
@@ -209,7 +211,7 @@ python3 script/plot.py --cleaned-dir data/cleaned --output-dir figure
 Use `--help` with any script to see its options:
 
 ---
-### 4. Complie the final PDF report
+### 4. Compile the final PDF report
 
 ```bash
 latexmk -pdf -output-directory=memo memo/ED_memo.tex

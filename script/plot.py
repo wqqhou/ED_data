@@ -6,21 +6,22 @@ import plotly.express as px
 from dotenv import load_dotenv
 import argparse  
 from pathlib import Path
+import numpy as np
 
 
 def parse_args():  # Define the command-line options and defaults.
     parser = argparse.ArgumentParser(  
-        description="Generate plots required based on assigment instruction"  
+        description="Generate figures and statistics for the original assignment."  
     )  
 
     parser.add_argument(  # Allow users to override the folder for downloaded ZIP files.
         "--output-dir", default="figure",  
-        help="Directory for extracted files (default: figure)"  
+        help="Directory for generated figures (default: figure)"  
     )  
 
     parser.add_argument(  # Allow users to override the folder for extracted CSV files.
         "--cleaned-dir", default="data/cleaned",  
-        help="Directory of processed files (default: data/cleaned)"  
+        help="Directory containing cleaned data (default: data/cleaned)"  
     )  
     args = parser.parse_args()  
     return args  
@@ -244,11 +245,7 @@ def policy_simulation(df, output_dir):
     plt.close()
 
     #Calculating net gainers and losers
-    state_totals['winner_dummy'] = (state_totals['budget_impact'] > 0).astype(int)
-    state_totals['outcome'] = state_totals['winner_dummy'].map({
-        1: 'Winner (Net Gain)', 
-        0: 'Loser (Net Loss)'
-    })
+    state_totals["outcome"] = np.select([state_totals["budget_impact"] > 0, state_totals["budget_impact"] < 0], ["Winner (Net Gain)", "Loser (Net Loss)"], default="No Change")
     print("\nGenerating Winners/Losers US Heat Map...")
     fig_winners = px.choropleth(
         state_totals,
@@ -258,9 +255,9 @@ def policy_simulation(df, output_dir):
         scope="usa",
         color_discrete_map={ 
             'Winner (Net Gain)': '#0072B2', #Color blind friendly 
-            'Loser (Net Loss)': '#E69F00'
+            'Loser (Net Loss)': '#E69F00',
+            'No Change': '#FFFFFF'
         } 
-        
     )
     
     fig_winners.update_layout(

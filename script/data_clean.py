@@ -93,8 +93,11 @@ def process_ipeds_data(extract_dir, start_year, end_year):
     territories_to_drop = ['DC', 'FM', 'MH', 'MP', 'PR', 'PW', 'VI', 'GU', 'AS']
     final_df = final_df.loc[(~final_df["STABBR"].isin(territories_to_drop)) & (final_df["UGOFFER"] == 1)].copy()
 
-    # Assignment definition: "two-year college" = undergraduate institution that does not grant bachelor's degrees.
+    
     # Create dummy variables
+    # Assignment definition: "two-year college" = undergraduate institution that does not grant bachelor's degrees.
+    # ICLEVEL == 1 identifies institutions whose programs are 4-year or higher.
+    # Given the available variables, we use this classification as a proxy for bachelor's-degree-granting status.
 
     final_df["PUBLIC"] = (final_df["CONTROL"] == 1).astype(int)
     final_df["DEGREE_BACH"] = (final_df["ICLEVEL"] == 1).astype(int)
