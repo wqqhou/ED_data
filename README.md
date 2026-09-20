@@ -122,7 +122,7 @@ The submitted analysis finds that:
   * the **90/10 ratio declines from 1.63 to 1.12**;
   * the difference between the highest- and lowest-aid states declines from approximately **$1,629 to $711 per student**; and
   * the cross-state standard deviation falls substantially.
-* The simulated allocation would require approximately **$133.3 million in additional federal grant expenditure** relative to the observed allocation.
+* The simulated allocation would require approximately **$134.3 million in additional federal grant expenditure** relative to the observed allocation.
 
 These results should be interpreted as a descriptive and counterfactual exercise under the definitions and allocation rule specified in the original task.
 
