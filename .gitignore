@@ -9,3 +9,4 @@ venv/*
 *.synctex.gz
 *.pyc
 *.json
+__pycache__/*
