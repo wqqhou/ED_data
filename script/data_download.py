@@ -1,8 +1,39 @@
+import argparse  
 import os
 import requests
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
+
+def parse_args():  # Define the command-line options and defaults.
+    parser = argparse.ArgumentParser(  
+        description="Download annual IPEDS data files."  
+    )  
+
+    parser.add_argument(  # Allow users to override the first academic year.
+        "--start-year", type=int, default=2010,  
+        help="First academic year to download (default: 2010)"  
+    )  
+
+    parser.add_argument(  # Allow users to override the last academic year.
+        "--end-year", type=int, default=2015, 
+        help="Last academic year to download (default: 2015)"  
+    )  
+
+    parser.add_argument(  # Allow users to override the folder for downloaded ZIP files.
+        "--download-dir", default="data/raw",  
+        help="Directory for downloaded files (default: data/raw)"  
+    )  
+
+    parser.add_argument(  # Allow users to override the folder for extracted CSV files.
+        "--extract-dir", default="data/interim",  
+        help="Directory for extracted files (default: data/interim)"  
+    )  
+
+    args = parser.parse_args()  
+    if args.start_year > args.end_year:  # Reject a reversed range before downloading any files.
+        parser.error("--start-year must be less than or equal to --end-year")  
+    return args  
 
 def download_file(download_info):
     """
@@ -26,12 +57,9 @@ def download_file(download_info):
     except requests.exceptions.RequestException as e:
         return f"Failed to download {url}. Error: {e}"
 
-
 def main():
-    """
-    Main execution function to load configuration, prompt user, 
-    download files concurrently, and extract them.
-    """
+    # Load configuration, download files concurrently, and extract them using command-line options.
+    args = parse_args()  
     load_dotenv()
     
     base_path = os.getenv("BASE_PROJECT_PATH")
@@ -41,17 +69,15 @@ def main():
     if not all([base_path, hd_url_template, sfa_url_template]):
         raise ValueError("Missing configuration. Please check your .env file.")
         
-    # Setup Directories from User Input
-    download_folder = input("Download directory name: ")
-    download_dir = os.path.join(base_path, download_folder)
+    # Resolve the selected directories relative to BASE_PROJECT_PATH; absolute paths also work.
+    download_dir = os.path.join(base_path, args.download_dir)  
     os.makedirs(download_dir, exist_ok=True)
     
-    extracted_folder = input("Extract directory name: ")
-    extract_dir = os.path.join(base_path, extracted_folder)
+    extract_dir = os.path.join(base_path, args.extract_dir)  
     os.makedirs(extract_dir, exist_ok=True)
     
-    start_year = int(input("Starting year: "))
-    end_year = int(input("Ending year: "))
+    start_year = args.start_year  
+    end_year = args.end_year  
     
     # Setup Concurrent Downloading Workflow
     tasks = []
@@ -96,4 +122,4 @@ def main():
     print(f"\nAll files successfully extracted to: {extract_dir}")
 
 if __name__ == "__main__":
-    main()
+    main()  

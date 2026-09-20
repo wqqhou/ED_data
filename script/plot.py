@@ -2,8 +2,27 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from dotenv import load_dotenv
 import plotly.express as px
+from dotenv import load_dotenv
+import argparse  
+
+
+def parse_args():  # Define the command-line options and defaults.
+    parser = argparse.ArgumentParser(  
+        description="Generate plots required based on assigment instruction"  
+    )  
+
+    parser.add_argument(  # Allow users to override the folder for downloaded ZIP files.
+        "--output-dir", default="figure",  
+        help="Directory for extracted files (default: figure)"  
+    )  
+
+    parser.add_argument(  # Allow users to override the folder for extracted CSV files.
+        "--cleaned-dir", default="data/cleaned",  
+        help="Directory of processed files (default: data/cleaned)"  
+    )  
+    args = parser.parse_args()  
+    return args  
 
 def plot_2yr_public_enrollment(df, output_dir):
 
@@ -251,23 +270,27 @@ def policy_simulation(df, output_dir):
     fig_winners.write_image(plot_path_winners, scale=3) 
     print(f"Winners map successfully saved to: {plot_path_winners}")
 
-def main():
-    load_dotenv()
-    base_path = os.getenv("BASE_PROJECT_PATH")
-    data_file = os.path.join(base_path, "data/clean/cleaned_panel.parquet")
+def generate_figures(clean_dir, output_dir):
+    data_file = os.path.join(clean_dir, "cleaned_panel.parquet")
     df = pd.read_parquet(data_file)
 
-    figure_folder = input("Figure directory name: ")
-    figure_dir = os.path.join(base_path, figure_folder)
-    os.makedirs(figure_dir, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
     
-    plot_2yr_public_enrollment(df, figure_dir)
-    plot_ny_vs_vt_aid(df, figure_dir)
-    state_spread_analysis(df, figure_dir)
-    policy_simulation(df, figure_dir)
+    plot_2yr_public_enrollment(df, output_dir)
+    plot_ny_vs_vt_aid(df, output_dir)
+    state_spread_analysis(df, output_dir)
+    policy_simulation(df, output_dir)
     
     print("\nAll visualizations complete!")
     #All done: )  hooray!! 
+
+
+def main():
+    load_dotenv()
+    args = parse_args()
+    clean_dir = args.cleaned_dir
+    output_dir = args.output_dir
+    generate_figures(clean_dir, output_dir)
 
 if __name__ == "__main__":
     main()

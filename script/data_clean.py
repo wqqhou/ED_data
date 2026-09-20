@@ -1,10 +1,38 @@
 import os
 import pandas as pd
-import numpy as numpy
 from dotenv import load_dotenv
+import argparse  
 
 
+def parse_args():  # Define the command-line options and defaults.
+    parser = argparse.ArgumentParser(  
+        description="Porcess annual IPEDS data files."  
+    )  
 
+    parser.add_argument(  # Allow users to override the first academic year.
+        "--start-year", type=int, default=2010,  
+        help="First academic year to process (default: 2010)"  
+    )  
+
+    parser.add_argument(  # Allow users to override the last academic year.
+        "--end-year", type=int, default=2015, 
+        help="Last academic year to process (default: 2015)"  
+    )  
+
+    parser.add_argument(  # Allow users to override the folder for downloaded ZIP files.
+        "--interim-dir", default="data/interim",  
+        help="Directory of extracted files (default: data/interim)"  
+    )  
+
+    parser.add_argument(  # Allow users to override the folder for extracted CSV files.
+        "--cleaned-dir", default="data/cleaned",  
+        help="Directory for processed files (default: data/cleaned)"  
+    )  
+
+    args = parser.parse_args()  
+    if args.start_year > args.end_year:  # Reject a reversed range before downloading any files.
+        parser.error("--start-year must be less than or equal to --end-year")  
+    return args  
 
 def process_ipeds_data(extract_dir, start_year, end_year):
     """
@@ -57,6 +85,9 @@ def process_ipeds_data(extract_dir, start_year, end_year):
     # Keep only institutions that offer undergraduate programs
     final_df = final_df[final_df['UGOFFER'] == 1]
 
+    # Assignment definition:
+    # "two-year college" = undergraduate institution that does not grant bachelor's degrees.
+
     # Create dummy variables
     final_df['PUBLIC'] = (final_df['CONTROL'] == 1).astype(int)
     final_df['DEGREE_BACH'] = (final_df['ICLEVEL'] == 1).astype(int)
@@ -73,15 +104,24 @@ def process_ipeds_data(extract_dir, start_year, end_year):
     ]
 
     available_columns = [col for col in columns_to_keep if col in final_df.columns]
+
+    #Makes sure we have all the columns as exepected
+    missing = set(columns_to_keep) - set(final_df.columns)
+    if missing:
+        raise ValueError(f"Missing required variables: {missing}")
+
     clean_panel_df = final_df[available_columns].copy()
 
     print("\n--- Creating a Balanced Panel ---")
 
     # Drop rows with missing values
     clean_panel_df = clean_panel_df.dropna()
-    # Enforce exactly 6 years of data per school
-    school_counts = clean_panel_df['UNITID'].value_counts()
-    valid_schools = school_counts[school_counts == 6].index
+
+    # Enforce exactly 6 unique years of data per school
+    year_counts = (clean_panel_df.groupby("UNITID")["YEAR"].nunique())
+    assert not clean_panel_df.duplicated(["UNITID", "YEAR"]).any()
+    valid_schools = year_counts[year_counts == 6].index
+    
     # Filter the dataframe to only keep rows where the school ID is in that valid list
     clean_panel_df = clean_panel_df[clean_panel_df['UNITID'].isin(valid_schools)]
     clean_panel_df.rename(columns={
@@ -97,22 +137,20 @@ def process_ipeds_data(extract_dir, start_year, end_year):
     print(f"Balanced panel created. Final size: {clean_panel_df.shape[0]} rows.")
     
     return clean_panel_df
-
-
+    
 def main():
 
+    args = parse_args()  
     load_dotenv()
     base_path = os.getenv("BASE_PROJECT_PATH")
 
-    interim_folder = input("Interim Directory name:")
-    interim_dir = os.path.join(base_path, interim_folder)
+    interim_dir = os.path.join(base_path, args.interim_dir)
     os.makedirs(interim_dir, exist_ok=True)
 
-    clean_folder = input("Interim Clean name:")
-    clean_dir = os.path.join(base_path, clean_folder)
+    clean_dir = os.path.join(base_path, args.cleaned_dir)
     os.makedirs(clean_dir, exist_ok=True)
     
-    clean_data = process_ipeds_data(interim_dir, 2010, 2015)
+    clean_data = process_ipeds_data(interim_dir, args.start_year, args.end_year)
     
     if clean_data is not None and not clean_data.empty:
         csv_path = os.path.join(clean_dir, "cleaned_panel.csv")

@@ -134,6 +134,8 @@ These results should be interpreted as a descriptive and counterfactual exercise
 ED_data/
 │
 ├── script/
+│   ├── main.py              # Run the complete download, clean, and plot workflow
+│   ├── cli.py               # Shared command-line arguments and directory defaults
 │   ├── data_download.py     # Download and extract annual IPEDS files
 │   ├── data_clean.py        # Merge, clean, and construct balanced panel
 │   └── plot.py              # Statistical analysis, simulation, and figures
@@ -147,7 +149,7 @@ ED_data/
 │   ├── figure5_policy_simulation.png
 │   └── figure6_winners_losers_map.png
 │
-├── .env.example             # Local path and IPEDS URL configuration
+├── .env                     # Local IPEDS URL configuration (not versioned)
 ├── requirements.txt
 └── README.md
 ```
@@ -166,44 +168,71 @@ pip install -r requirements.txt
 
 ### 2. Configure the environment
 
-Copy the example configuration:
+Create a `.env` file in the repository root containing the download URL templates:
 
-```bash
-cp .env.example .env
+```dotenv
+NCES_HD_URL_TEMPLATE=https://nces.ed.gov/ipeds/datacenter/data/HD{}.zip
+NCES_SFA_URL_TEMPLATE=https://nces.ed.gov/ipeds/datacenter/data/SFA{}.zip
 ```
 
-Then set `BASE_PROJECT_PATH` in `.env` to the local path of this repository. The NCES download URL templates are already included in `.env.example`.
+Relative directory paths are resolved against the repository root by default. To use a different base directory, optionally set `BASE_PROJECT_PATH` in `.env`. Absolute paths and paths beginning with `~` are also supported.
 
-### 3. Download IPEDS data
+### 3. Run the complete workflow
+
+```bash
+python script/main.py
+```
+
+This downloads and extracts the data, exports the clean panel, and generates the figures using these defaults. No keyboard input is required.
+
+| Argument | Default | Purpose |
+| --- | --- | --- |
+| `--start-year` | `2010` | First academic year, coded by starting year |
+| `--end-year` | `2015` | Last academic year, inclusive |
+| `--download-dir` | `data/raw` | Downloaded ZIP files |
+| `--extract-dir` | `data/interim` | Extracted annual CSV files |
+| `--clean-dir` | `data/cleaned` | Cleaned CSV and Parquet panel |
+| `--output-dir` | `figure` | Generated figures |
+
+Override only the values you want to change:
+
+```bash
+python script/main.py \
+    --download-dir data/downloads \
+    --extract-dir data/extracted \
+    --clean-dir data/custom_clean \
+    --output-dir figure/custom
+```
+
+The analysis compares 2010 with 2015 and uses 2015 for aid and policy calculations, so the complete workflow requires a year range containing both 2010 and 2015. The download and cleaning scripts can also process other year ranges.
+
+### 4. Run individual stages
 
 ```bash
 python script/data_download.py
-```
-
-For the original analysis, use:
-
-```text
-Starting year: 2010
-Ending year:   2015
-```
-
-Specify local directories for the downloaded and extracted IPEDS files when prompted.
-
-### 4. Construct the clean panel
-
-```bash
 python script/data_clean.py
-```
-
-Point the script to the directory containing the extracted IPEDS files and specify a destination for the clean dataset.
-
-### 5. Reproduce the analysis and figures
-
-```bash
 python script/plot.py
 ```
 
-Specify `figure` as the output directory to reproduce the figures included in this repository.
+Each stage uses the same relevant defaults:
+
+* `data_download.py` accepts `--start-year`, `--end-year`, `--download-dir`, and `--extract-dir`.
+* `data_clean.py` accepts `--start-year`, `--end-year`, `--extract-dir`, and `--clean-dir`.
+* `plot.py` accepts `--clean-dir` and `--output-dir`, and reads `cleaned_panel.parquet` from the clean directory.
+
+When running stages separately with custom directories, pass the same extract directory to download and cleaning, and the same clean directory to cleaning and plotting. For example:
+
+```bash
+python script/data_download.py --extract-dir data/extracted
+python script/data_clean.py --extract-dir data/extracted --clean-dir data/custom_clean
+python script/plot.py --clean-dir data/custom_clean --output-dir figure/custom
+```
+
+Use `--help` with any script to see its options:
+
+```bash
+python script/main.py --help
+```
 
 ---
 
