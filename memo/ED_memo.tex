@@ -1,0 +1,82 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx} 
+\usepackage{setspace}
+\usepackage{caption}
+
+\begin{document}
+
+% --- MEMO HEADER ---
+\noindent
+\textbf{DATE:} \today \\
+\textbf{SUBJECT:} Analysis of 2-Year Public Enrollment Trends and Federal Grant Allocation \\
+ \normalsize
+\subsection*{Executive Summary}
+
+\begin{itemize}
+    \item Enrollment: First-time, full-time undergraduate enrollment at public two-year colleges declined by $16.65\%$ from 2010 to 2015.
+    \item Baseline Inequities: The current framework heavily favors southern and eastern states. While the proposed policy change  improves geographic parity, it cost \$133.3 million. 
+\end{itemize}
+
+\subsection*{Data \& Methodology}
+This analysis uses a balanced panel of unrevised IPEDS data, restricted to undergraduate institutions. Institutions that closed or failed to report data during this period are omitted. This survivorship bias suggests the true enrollment contraction is potentially more severe than observed.
+
+\subsection*{2-Year Public College Enrollment Trends}
+Data confirms a downward trend in student enrollment. Over the six-year window, total first-time, full-time enrollment across public two-year colleges dropped by $16.65\%$ (Figure 1). This persistent decline indicates a long term structural contraction.
+
+\subsection*{Current Federal Grant Distribution (2015-16)}
+Analysis of the 2015–16 baseline validates state-level funding disparity. Vermont’s per-student federal aid is substantially lower than New York's (Figure 2). Nationally, the current distribution heavily favors southern and eastern states. (Figure 3) The baseline distribution exhibits high variance, with a 90/10 ratio of 1.63, and a standard deviation of $\$373.98$.
+
+\subsection*{Simulated Policy Impact}
+The policy proposal introduces a more equitable distribution (Figure 4). The policy drastically compresses variance, the standard deviation drops to roughly one-third of its original value. The difference between the most favored state and the least favored decreases from $\$1,628.80$ to $\$711.37$, and the 90/10 ratio falls to 1.12 (Figure 5). However, an additional expenditure of $\$133,304,847.90$ is required to implement the policy.
+
+\subsection*{Conclusion}
+While the existing geographic inequity can be effectively addressed by the proposed policy,  policymakers must weigh this equity against the $\$133.3$ million cost. 
+\footnote{Figure 6 shows the list of states positively affected and negatively affected by this proposed policy}
+\newpage
+\section*{Appendix: Figures}
+
+
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{../figure/figure1_2yr_enrollment.png}
+    \caption{Total First-Time, Full-Time Undergraduate Enrollment Public 2-Year Colleges (2010 - 2015)}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{../figure/figure2_ny_vt_aid.png}
+    \caption{Average Federal Grant Aid per Student York vs. Vermont (2015-16)}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{../figure/figure3_state_aid_map.png}
+    \caption{Average Federal Grant Aid per Student by State (2015-16)}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{../figure/figure4_simulated_aid_map.png}
+    \caption{Simulated Federal Grant Aid per Student by State}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{../figure/figure5_policy_simulation.png}
+    \caption{Distribution of State Average Per-Student Aid Policy vs. Proposed Change (2015-16)}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=1\linewidth]{../figure/figure6_winners_losers_map.png}
+    \caption{Policy Winners and Losers}
+    \label{fig:placeholder}
+\end{figure}
+\end{document}
