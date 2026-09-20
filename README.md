@@ -137,7 +137,7 @@ ED_data/
 │   ├── data_download.py        # Download and extract annual IPEDS files
 │   ├── data_clean.py           # Merge, clean, and construct balanced panel
 │   ├── plot.py                 # Statistical analysis, simulation, and figures
-│   ├── output.py               # Construct and save the final numerical output
+│   ├── result_output.py               # Construct and save the final numerical output
 │   └── analysis_validation.py  # Data validation logics and helpers            
 │
 ├── figure/
